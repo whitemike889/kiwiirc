@@ -17,6 +17,32 @@
             display:none;
         }
     </style>
+
+    <style>
+        .kiwi-sponsor {
+            position: absolute;
+            z-index: 20;
+            bottom: 0px;
+            left: 0;
+            width: 100%;
+            padding: 10px 0;
+            font-size: 0.6em;
+            color: #333333;
+        }
+
+        .kiwi-sponsor a {
+            color: #333333;
+        }
+
+        @media screen and (max-width: 850px) {
+            .kiwi-sponsor, .kiwi-sponsor a {
+                bottom: -40px;
+            }
+            .kiwi-sponsor:hover {
+                background: #fff;
+            }
+        }
+    </style>
   </head>
   <body>
     <div id="app"></div>
