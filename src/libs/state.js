@@ -270,6 +270,7 @@ const stateObj = {
             notice: '%text',
             action: '* %nick %text',
             whois_ident: '%nick [%nick!%ident@%host] * %text',
+            whois_error: '[%nick] %text',
             whois: '%text',
             who: '%nick [%nick!%ident@%host] * %realname',
             quit: '%text',
@@ -899,7 +900,15 @@ const state = new Vue({
             // Handle any notifications
             let settingAlertOn = buffer.setting('alert_on');
             let isSelf = !network ? false : message.nick === network.nick;
-            if (isNewMessage && settingAlertOn !== 'never' && message.type !== 'nick' && !isSelf) {
+
+            if (
+                isNewMessage &&
+                settingAlertOn !== 'never' &&
+                message.type !== 'nick' &&
+                message.type !== 'traffic' &&
+                !bufferMessage.ignore &&
+                !isSelf
+            ) {
                 let notifyTitle = '';
                 let notifyMessage = message.nick ?
                     message.nick + ': ' :
@@ -1126,6 +1135,11 @@ const state = new Vue({
                 state.$set(buffer.users, normalisedNew, buffer.users[normalisedOld]);
                 state.$delete(buffer.users, normalisedOld);
             });
+
+            let buffer = this.getBufferByName(network.id, oldNick);
+            if (buffer) {
+                buffer.rename(newNick);
+            }
         },
 
         getStartups() {
@@ -1185,6 +1199,7 @@ function createEmptyBufferObject() {
             unread: 0,
             alert_on: 'default',
             has_opened: false,
+            channel_badkey: false,
             chathistory_available: true,
         },
         settings: {
@@ -1324,6 +1339,23 @@ function initialiseBufferState(buffer) {
             return result;
         },
     });
+    Object.defineProperty(buffer, 'rename', {
+        value: function rename(newName) {
+            let network = buffer.getNetwork();
+            let oldName = buffer.name;
+            let setActive = state.getActiveBuffer() === buffer;
+
+            buffer.name = newName;
+            if (setActive) {
+                state.setActiveBuffer(network.id, newName);
+            }
+
+            // update the buffer name on our messages
+            let bufferMessages = _.find(messages, { networkid: network.id, buffer: oldName });
+            bufferMessages.buffer = newName;
+        },
+    });
+
     Object.defineProperty(buffer, 'flag', {
         value: function flag(name, val) {
             if (typeof val !== 'undefined') {
