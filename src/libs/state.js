@@ -59,6 +59,7 @@ const stateObj = {
             hide_message_counts: false,
             default_ban_mask: '*!%i@%h',
             default_kick_reason: 'Your behavior is not conducive to the desired environment.',
+            shared_input: false,
         },
         // Startup screen default
         startupOptions: {
@@ -272,6 +273,9 @@ const stateObj = {
             whois_ident: '%nick [%nick!%ident@%host] * %text',
             whois_error: '[%nick] %text',
             whois: '%text',
+            whowas_ident: 'was [%nick!%ident@%host] * %name',
+            whowas_server: 'using %server (%info)',
+            whowas_error: '[%nick] %text',
             who: '%nick [%nick!%ident@%host] * %realname',
             quit: '%text',
             rejoin: '%text',
@@ -299,6 +303,7 @@ const stateObj = {
         app_height: 0,
         is_touch: false,
         favicon_counter: 0,
+        current_input: '',
     },
     networks: [
         /* {
@@ -1104,7 +1109,9 @@ const state = new Vue({
             let normalisedNick = nick.toLowerCase();
             let buffers = [];
             network.buffers.forEach((buffer) => {
-                if (buffer.users[normalisedNick]) {
+                if (buffer.users[normalisedNick] || buffer.name === nick) {
+                    buffers.push(buffer);
+                } else if (nick === network.nick && buffer.isQuery()) {
                     buffers.push(buffer);
                 }
             });
@@ -1207,6 +1214,7 @@ function createEmptyBufferObject() {
         last_read: Date.now(),
         active_timeout: null,
         message_count: 0,
+        current_input: '',
     };
 }
 

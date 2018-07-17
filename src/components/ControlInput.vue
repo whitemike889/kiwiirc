@@ -37,6 +37,7 @@
                         :placeholder="$t('input_placeholder')"
                         class="kiwi-controlinput-input"
                         wrap="off"
+                        @input="inputUpdate"
                         @keydown="inputKeyDown($event)"
                         @keyup="inputKeyUp($event)"
                         @click="closeInputTool"/>
@@ -51,7 +52,12 @@
                     <i class="fa fa-smile-o" aria-hidden="true"/>
                 </a>
                 <div
-                    v-rawElement="plugin.el"
+                    v-rawElement="{
+                        el: plugin.el,
+                        props: {
+                            controlinput: self,
+                        }
+                    }"
                     v-for="plugin in pluginUiElements"
                     :key="plugin.id"
                     class="kiwi-controlinput-tool"
@@ -84,6 +90,7 @@ export default {
     props: ['container', 'buffer'],
     data: function data() {
         return {
+            self: this,
             selfuser_open: false,
             value: '',
             history: [],
@@ -122,6 +129,13 @@ export default {
             let val = this.history[this.history_pos];
             this.$refs.input.setValue(val || '');
         },
+        buffer() {
+            if (!state.setting('buffers.shared_input')) {
+                this.inputRestore();
+            }
+
+            this.autocomplete_open = false;
+        },
     },
     created: function created() {
         this.listen(state, 'document.keydown', (ev) => {
@@ -148,7 +162,25 @@ export default {
             this.$refs.input.focus();
         });
     },
+    mounted() {
+        this.inputRestore();
+    },
     methods: {
+        inputUpdate(val) {
+            if (state.setting('buffers.shared_input')) {
+                state.ui.current_input = val;
+            } else {
+                this.buffer.current_input = val;
+            }
+        },
+        inputRestore() {
+            let currentInput = state.setting('buffers.shared_input') ?
+                state.ui.current_input :
+                this.buffer.current_input;
+
+            this.$refs.input.reset(currentInput);
+            this.$refs.input.selectionToEnd();
+        },
         toggleSelfUser() {
             if (this.networkState === 'connected') {
                 this.selfuser_open = !this.selfuser_open;
@@ -245,6 +277,20 @@ export default {
                 && !event.ctrlKey
             ) {
                 // Tab and no other keys as tab+other is often a keyboard shortcut
+                // Tab key was just pressed, start general auto completion
+                let currentWord = this.$refs.input.getCurrentWord();
+                let currentToken = currentWord.word.substr(0, currentWord.position);
+
+                let items = this.buildAutoCompleteItems({
+                    users: true,
+                    buffers: true,
+                });
+                this.openAutoComplete(items);
+                this.autocomplete_filter = currentToken;
+
+                // Disable filtering so that tabbing cycles through words more like
+                // traditional IRC clients.
+                this.autocomplete_filtering = false;
                 event.preventDefault();
             } else if (meta && event.keyCode === 221) {
                 // meta + ]
@@ -294,17 +340,6 @@ export default {
                 && !event.ctrlKey
             ) {
                 // Tab and no other keys as tab+other is often a keyboard shortcut
-                // Tab key was just pressed, start general auto completion
-                let items = this.buildAutoCompleteItems({
-                    users: true,
-                    buffers: true,
-                });
-                this.openAutoComplete(items);
-                this.autocomplete_filter = currentToken;
-
-                // Disable filtering so that tabbing cycles through words more like
-                // traditional IRC clients.
-                this.autocomplete_filtering = false;
                 event.preventDefault();
             }
 
