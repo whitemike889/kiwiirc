@@ -1,9 +1,8 @@
 <template>
     <div class="kiwi-statebrowser kiwi-theme-bg">
 
-        <div class="kiwi-statebrowser-mobile-close" @click="hideStatebrowser">
-            <span> Close </span>
-            <i class="fa fa-times" aria-hidden="true"/>
+        <div class="kiwi-statebrowser-appsettings" @click="clickAppSettings">
+            <i class="fa fa-cog" aria-hidden="true"/>
         </div>
 
         <div
@@ -12,10 +11,20 @@
             class="kiwi-statebrowser-usermenu"
         >
             <div
+                :class="[isConnected ?
+                    'kiwi-statebrowser-usermenu-avatar--connected' :
+                    'kiwi-statebrowser-usermenu-avatar--disconnected'
+                ]"
                 class="kiwi-statebrowser-usermenu-avatar"
                 @click="is_usermenu_open=!is_usermenu_open"
             >
-                U
+                {{ userInitial }}
+                <away-status-indicator
+                    v-if="getNetwork && getNetwork.state === 'connected'"
+                    :network="getNetwork"
+                    :user="getUser"
+                    :toggle="false"
+                />
             </div>
             <div v-if="is_usermenu_open" class="kiwi-statebrowser-usermenu-body">
                 <p> {{ $t('state_remembered') }} </p>
@@ -24,10 +33,9 @@
                     <i class="fa fa-times" aria-hidden="true"/>
                 </div>
             </div>
-        </div>
-
-        <div class="kiwi-statebrowser-appsettings" @click="clickAppSettings">
-            {{ $t('kiwi_settings') }} <i class="fa fa-cog" aria-hidden="true"/>
+            <div v-else class="kiwi-statebrowser-usermenu-network">
+                {{ networkName }}
+            </div>
         </div>
 
         <div class="kiwi-statebrowser-tools">
@@ -81,14 +89,14 @@
                     v-for="network in networksToShow"
                     :key="network.id"
                     :network="network"
-                    :ui-state="uiState"
+                    :sidebar-state="sidebarState"
                 />
             </div>
         </div>
 
         <div v-if="!isRestrictedServer" class="kiwi-statebrowser-newnetwork">
             <a class="u-button u-button-primary" @click="clickAddNetwork">
-                Add Network
+                {{ $t('add_network') }}
                 <i class="fa fa-plus" aria-hidden="true"/>
             </a>
         </div>
@@ -96,13 +104,16 @@
 </template>
 
 <script>
+'kiwi public';
 
+import * as TextFormatting from '@/helpers/TextFormatting';
 import state from '@/libs/state';
 import NetworkProvider from '@/libs/NetworkProvider';
 import GlobalApi from '@/libs/GlobalApi';
 import StateBrowserNetwork from './StateBrowserNetwork';
 import AppSettings from './AppSettings';
 import BufferSettings from './BufferSettings';
+import AwayStatusIndicator from './AwayStatusIndicator';
 
 let netProv = new NetworkProvider();
 
@@ -110,8 +121,9 @@ export default {
     components: {
         BufferSettings,
         StateBrowserNetwork,
+        AwayStatusIndicator,
     },
-    props: ['networks', 'uiState'],
+    props: ['networks', 'sidebarState'],
     data: function data() {
         return {
             is_usermenu_open: false,
@@ -121,6 +133,31 @@ export default {
         };
     },
     computed: {
+        userInitial() {
+            let network = state.getActiveNetwork();
+            let initial = 'U';
+            if (network && network.nick) {
+                initial = network.nick.charAt(0).toUpperCase();
+            }
+            return initial;
+        },
+        getNetwork() {
+            return state.getActiveNetwork();
+        },
+        getUser() {
+            let network = state.getActiveNetwork();
+            return network ?
+                network.currentUser() :
+                null;
+        },
+        networkName() {
+            let network = state.getActiveNetwork();
+            let name = TextFormatting.t('no_network');
+            if (network) {
+                name = network.name;
+            }
+            return name;
+        },
         isPersistingState: function isPersistingState() {
             return !!state.persistence;
         },
@@ -132,7 +169,8 @@ export default {
             return this.networks.filter(network => network !== bncNet);
         },
         isConnected: function isConnected() {
-            return state.getActiveNetwork().state === 'connected';
+            let network = state.getActiveNetwork();
+            return network && network.state === 'connected';
         },
     },
     created: function created() {
@@ -150,7 +188,7 @@ export default {
             network.showServerBuffer('settings');
         },
         clickAppSettings: function clickAppSettings() {
-            state.$emit('active.component', AppSettings);
+            state.$emit('active.component.toggle', AppSettings);
         },
         hideStatebrowser: function hideStatebrowser() {
             state.$emit('statebrowser.hide');
@@ -191,6 +229,13 @@ export default {
     width: 220px;
     text-align: center;
     overflow: hidden;
+    transition: all 0.2s;
+    transition-delay: 0.05s;
+}
+
+.kiwi-statebrowser.kiwi-wrap--statebrowser-drawopen {
+    transition: all 0.2s;
+    transition-delay: 0.05s;
 }
 
 .kiwi-statebrowser h1 {
@@ -209,20 +254,19 @@ export default {
 
 /* User Settings */
 .kiwi-statebrowser-appsettings {
-    width: 90%;
-    text-align: left;
-    padding: 0 10px 0 10px;
-    font-size: 0.8em;
-    border-radius: 4px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 39px;
+    text-align: center;
+    font-size: 1em;
     box-sizing: border-box;
-    opacity: 1;
-    line-height: 35px;
+    line-height: 57px;
     cursor: pointer;
-    margin: 0 5%;
     font-weight: 500;
-    letter-spacing: 1px;
     transition: all 0.3s;
-    margin-bottom: 10px;
+    opacity: 0.8;
+    z-index: 20;
 }
 
 .kiwi-statebrowser-appsettings:hover {
@@ -234,7 +278,6 @@ export default {
 }
 
 .kiwi-statebrowser-appsettings i {
-    float: right;
     line-height: 35px;
     font-size: 1.2em;
 }
@@ -243,7 +286,7 @@ export default {
     width: 100%;
     padding-bottom: 0;
     margin-bottom: 10px;
-    padding-top: 10px;
+    padding-top: 34px;
 }
 
 .kiwi-statebrowser-usermenu-avatar {
@@ -254,9 +297,18 @@ export default {
     text-align: center;
     line-height: 50px;
     border-radius: 50%;
-    overflow: hidden;
     margin: 0 auto 10px auto;
     transition: all 0.3s;
+    position: relative;
+}
+
+.kiwi-statebrowser-usermenu .kiwi-awaystatusindicator {
+    position: absolute;
+    top: 1px;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #000;
 }
 
 .kiwi-statebrowser-usermenu-body {
@@ -341,6 +393,10 @@ export default {
 .kiwi-statebrowser-channel.kiwi-statebrowser-channel-active {
     font-weight: 600;
     opacity: 1;
+}
+
+.kiwi-statebrowser-channel::before {
+    line-height: 30px;
 }
 
 /* New Channel Button */
@@ -483,10 +539,6 @@ export default {
     cursor: pointer;
 }
 
-.kiwi-statebrowser-mobile-close {
-    display: none;
-}
-
 .kiwi-statebrowser-availablenetworks-link {
     border-right: 15px solid red;
 }
@@ -540,32 +592,16 @@ export default {
         width: 95%;
     }
 
-    .kiwi-statebrowser-mobile-close {
-        width: 100%;
-        color: #fff;
-        display: block;
-        padding: 0 10px;
-        font-weight: 600;
-        background: #42b992;
-        box-sizing: border-box;
-        margin-bottom: 0;
-        text-transform: uppercase;
-        line-height: 45px;
-        height: 45px;
-
-        span {
-            float: left;
-        }
-
-        i {
-            float: right;
-            font-size: 1.2em;
-            line-height: 45px;
-        }
+    .kiwi-statebrowser-channel::before {
+        line-height: 40px;
     }
 
     .kiwi-statebrowser-usermenu {
         position: relative;
+    }
+
+    .kiwi-statebrowser-usermenu-body .kiwi-close-icon {
+        display: none;
     }
 }
 

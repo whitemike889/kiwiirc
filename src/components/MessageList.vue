@@ -29,11 +29,12 @@
                 <span>{{ $t('unread_messages') }}</span>
             </div>
 
-            <component
-                v-if="message.render() && message.template"
-                :is="message.template"
-                :message="message"
-                :buffer="buffer"
+            <!-- message.template is checked first for a custom component, then each message layout
+                 checks for a message.bodyTemplate custom component to apply only to the body area
+            -->
+            <div
+                v-rawElement="message.template.$el"
+                v-if="message.render() && message.template && message.template.$el"
             />
             <message-list-message-modern
                 v-else-if="listType === 'modern'"
@@ -41,8 +42,14 @@
                 :idx="idx"
                 :ml="thisMl"
             />
+            <message-list-message-inline
+                v-else-if="listType === 'inline'"
+                :message="message"
+                :idx="idx"
+                :ml="thisMl"
+            />
             <message-list-message-compact
-                v-else-if="listType !== 'modern'"
+                v-else-if="listType === 'compact'"
                 :message="message"
                 :idx="idx"
                 :ml="thisMl"
@@ -70,15 +77,18 @@
 </template>
 
 <script>
+'kiwi public';
 
 import strftime from 'strftime';
-import state from '@/libs/state';
-import * as TextFormatting from '@/helpers/TextFormatting';
+import Logger from '@/libs/Logger';
 import BufferKey from './BufferKey';
 import NotConnected from './NotConnected';
 import MessageListMessageCompact from './MessageListMessageCompact';
 import MessageListMessageModern from './MessageListMessageModern';
+import MessageListMessageInline from './MessageListMessageInline';
 import LoadingAnimation from './LoadingAnimation.vue';
+
+let log = Logger.namespace('MessageList.vue');
 
 // If we're scrolled up more than this many pixels, don't auto scroll down to the bottom
 // of the message list
@@ -90,10 +100,11 @@ export default {
         NotConnected,
         MessageListMessageModern,
         MessageListMessageCompact,
+        MessageListMessageInline,
         LoadingAnimation,
     },
-    props: ['buffer', 'users'],
-    data: function data() {
+    props: ['buffer'],
+    data() {
         return {
             auto_scroll: true,
             chathistoryAvailable: true,
@@ -104,17 +115,20 @@ export default {
         };
     },
     computed: {
-        thisMl: function thisMl() {
+        thisMl() {
             return this;
         },
-        listType: function listType() {
-            return state.setting('messageLayout');
+        listType() {
+            if (this.$state.setting('messageLayout')) {
+                log.info('Deprecation Warning: The config option \'messageLayout\' has been moved to buffers.messageLayout');
+            }
+            return this.buffer.setting('messageLayout') || this.$state.setting('messageLayout');
         },
-        useExtraFormatting: function useExtraFormatting() {
+        useExtraFormatting() {
             // Enables simple markdown formatting
             return this.buffer.setting('extra_formatting');
         },
-        shouldShowChathistoryTools: function shouldShowChathistoryTools() {
+        shouldShowChathistoryTools() {
             // Only show it if we're connected
             if (this.buffer.getNetwork().state !== 'connected') {
                 return false;
@@ -129,7 +143,7 @@ export default {
                 this.buffer.isChannel() &&
                 this.buffer.flags.channel_badkey;
         },
-        ourNick: function ourNick() {
+        ourNick() {
             return this.buffer ?
                 this.buffer.getNetwork().nick :
                 '';
@@ -215,7 +229,7 @@ export default {
         },
     },
     watch: {
-        buffer: function watchBuffer(newBuffer) {
+        buffer(newBuffer) {
             if (!newBuffer) {
                 return;
             }
@@ -228,26 +242,26 @@ export default {
 
             this.scrollToBottom();
         },
-        'buffer.message_count': function watchBufferMessageCount() {
+        'buffer.message_count'() {
             this.$nextTick(() => {
                 this.maybeScrollToBottom();
             });
         },
     },
-    mounted: function mounted() {
+    mounted() {
         this.$nextTick(() => {
             this.scrollToBottom();
         });
 
-        this.listen(state, 'mediaviewer.opened', () => {
+        this.listen(this.$state, 'mediaviewer.opened', () => {
             this.$nextTick(this.maybeScrollToBottom.apply(this));
         });
     },
     methods: {
-        isHoveringOverMessage: function isHoveringOverMessage(message) {
+        isHoveringOverMessage(message) {
             return message.nick && message.nick.toLowerCase() === this.hover_nick.toLowerCase();
         },
-        toggleMessageInfo: function toggleMessageInfo(message) {
+        toggleMessageInfo(message) {
             if (!message) {
                 this.message_info_open = null;
             } else if (this.message_info_open === message) {
@@ -297,14 +311,14 @@ export default {
 
             return false;
         },
-        canShowInfoForMessage: function canShowInfoForMessage(message) {
+        canShowInfoForMessage(message) {
             let showInfoForTypes = ['privmsg', 'notice', 'action'];
             return showInfoForTypes.indexOf(message.type) > -1;
         },
-        bufferSetting: function bufferSetting(key) {
+        bufferSetting(key) {
             return this.buffer.setting(key);
         },
-        formatTime: function formatTime(time) {
+        formatTime(time) {
             return strftime(this.buffer.setting('timestamp_format') || '%T', new Date(time));
         },
         formatTimeFull(time) {
@@ -313,10 +327,10 @@ export default {
                 strftime(format, new Date(time)) :
                 (new Date(time)).toLocaleString();
         },
-        formatMessage: function formatMessage(message) {
+        formatMessage(message) {
             return message.toHtml(this);
         },
-        isMessageHighlight: function isMessageHighlight(message) {
+        isMessageHighlight(message) {
             // Highlighting ourselves when we join or leave a channel is silly
             if (message.type === 'traffic') {
                 return false;
@@ -324,30 +338,46 @@ export default {
 
             return message.isHighlight;
         },
-        nickStyle: function nickColour(nick) {
-            if (this.bufferSetting('colour_nicknames_in_messages')) {
-                return 'color:' + TextFormatting.createNickColour(nick) + ';';
+        userColour(user) {
+            if (user && this.bufferSetting('colour_nicknames_in_messages')) {
+                return user.getColour();
             }
             return '';
         },
         openUserBox(nick) {
-            let user = state.getUser(this.buffer.networkid, nick);
+            let user = this.$state.getUser(this.buffer.networkid, nick);
             if (user) {
-                state.$emit('userbox.show', user, {
+                this.$state.$emit('userbox.show', user, {
                     buffer: this.buffer,
                 });
             }
         },
-        onListClick: function onListClick(event) {
+        onListClick(event) {
             this.toggleMessageInfo();
         },
-        onMessageClick: function onThreadClick(event, message) {
+        onMessageDblClick(event, message) {
+            clearTimeout(this.messageClickTmr);
+
+            let userNick = event.target.getAttribute('data-nick');
+            if (userNick) {
+                this.$state.$emit('input.insertnick', userNick);
+            }
+        },
+        onMessageClick(event, message, delay) {
+            // Delaying the click for 200ms allows us to check for a second click. ie. double click
+            // Quick hack as we only need double click for nicks, nothing else
+            if (delay && event.target.getAttribute('data-nick')) {
+                clearTimeout(this.messageClickTmr);
+                this.messageClickTmr = setTimeout(this.onMessageClick, 200, event, message, false);
+                return;
+            }
+
             let isLink = event.target.tagName === 'A';
 
             let channelName = event.target.getAttribute('data-channel-name');
             if (channelName && isLink) {
                 let network = this.buffer.getNetwork();
-                state.addBuffer(this.buffer.networkid, channelName);
+                this.$state.addBuffer(this.buffer.networkid, channelName);
                 network.ircClient.join(channelName);
                 return;
             }
@@ -360,7 +390,7 @@ export default {
 
             let url = event.target.getAttribute('data-url');
             if (url && isLink) {
-                state.$emit('mediaviewer.show', url);
+                this.$state.$emit('mediaviewer.show', url);
             }
 
             if (this.message_info_open && this.message_info_open !== message) {
@@ -370,7 +400,7 @@ export default {
                 return;
             }
 
-            if (state.ui.is_touch) {
+            if (this.$state.ui.is_touch && this.$state.setting('buffers.show_message_info')) {
                 if (this.canShowInfoForMessage(message) && event.target.nodeName === 'A') {
                     // We show message info boxes on touch screen devices so that the user has an
                     // option to preview the links or do other stuff.
@@ -380,7 +410,7 @@ export default {
                 this.toggleMessageInfo(message);
             }
         },
-        onThreadScroll: function onThreadScroll() {
+        onThreadScroll() {
             let el = this.$el;
             let scrolledUpByPx = el.scrollHeight - (el.offsetHeight + el.scrollTop);
 
@@ -390,10 +420,10 @@ export default {
                 this.auto_scroll = true;
             }
         },
-        scrollToBottom: function scrollToBottom() {
+        scrollToBottom() {
             this.$el.scrollTop = this.$el.scrollHeight;
         },
-        maybeScrollToBottom: function maybeScrollToBottom() {
+        maybeScrollToBottom() {
             if (this.auto_scroll) {
                 this.$el.scrollTop = this.$el.scrollHeight;
             }
@@ -421,6 +451,11 @@ export default {
     overflow: hidden;
     line-height: 1.5em;
     margin: 0;
+}
+
+.kiwi-wrap--monospace .kiwi-messagelist-message {
+    font-family: Consolas, monaco, monospace;
+    font-size: 80%;
 }
 
 .kiwi-messagelist-message-mode,
@@ -464,7 +499,6 @@ export default {
     padding: 0.1em 0.5em;
     min-height: 0;
     line-height: normal;
-    margin: 1em 0.5em;
     text-align: left;
 }
 
@@ -512,9 +546,9 @@ export default {
     cursor: default;
 }
 
-.kiwi-container--sidebar-open .kiwi-messagelist::after {
+.kiwi-container--sidebar-drawn .kiwi-messagelist::after {
     content: '';
-    z-index: 2;
+    z-index: 3;
     left: 0;
     top: 0;
     width: 100%;
@@ -524,7 +558,7 @@ export default {
     pointer-events: none;
 }
 
-.kiwi-container--sidebar-open.kiwi-container--no-sidebar .kiwi-messagelist::after {
+.kiwi-container--sidebar-drawn.kiwi-container--no-sidebar .kiwi-messagelist::after {
     width: 0;
     height: 0;
     display: none;
@@ -554,6 +588,7 @@ export default {
     vertical-align: top;
     cursor: pointer;
     padding: 2px 4px;
+    word-break: break-all;
 }
 
 .kiwi-messagelist-message-traffic .kiwi-messagelist-nick {
@@ -584,7 +619,6 @@ export default {
 .kiwi-messagelist-emoji {
     width: 1.3em;
     display: inline-block;
-    pointer-events: none;
     vertical-align: middle;
 }
 
@@ -707,4 +741,5 @@ export default {
         margin: 0;
     }
 }
+
 </style>

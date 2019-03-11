@@ -1,9 +1,9 @@
 <template>
-    <div class="input-confirm kiwi-theme-bg">
+    <div class="u-input-confirm kiwi-theme-bg">
         <div v-if="state==='pre'" @click="prompt"><slot/></div>
 
         <template v-if="state==='prompt'">
-            <span class="input-confirm-label">{{ label }}</span>
+            <span class="u-input-confirm-label">{{ label }}</span>
             <a :class="['u-button-'+connoteCss.yes]" class="u-button" @click="complete(true)">
                 {{ $t('yes') }}
             </a>
@@ -15,6 +15,7 @@
 </template>
 
 <script>
+'kiwi public';
 
 let Vue = require('vue');
 
@@ -52,7 +53,7 @@ export default Vue.component('input-confirm', {
 </script>
 
 <style>
-.input-confirm {
+.u-input-confirm {
     display: inline-block;
     padding: 10px;
 }

@@ -1,17 +1,24 @@
 <template>
-    <div class="kiwi-controlinput kiwi-theme-bg">
-        <div
-            :class="{'kiwi-controlinput-selfuser--open': selfuser_open}"
-            class="kiwi-controlinput-selfuser"
-        >
-            <self-user
-                v-if="selfuser_open && networkState==='connected'"
-                :network="buffer.getNetwork()"
-                @close="selfuser_open=false"
-            />
+    <div :class="{'kiwi-controlinput-selfuser--open': selfuser_open}"
+         class="kiwi-controlinput kiwi-theme-bg"
+    >
+        <div class="kiwi-controlinput-selfuser">
+            <transition name="kiwi-selfuser-trans">
+                <self-user
+                    v-if="networkState==='connected'
+                    && selfuser_open === true"
+                    :network="buffer.getNetwork()"
+                    @close="selfuser_open=false"
+                />
+            </transition>
         </div>
 
         <div class="kiwi-controlinput-inner">
+            <away-status-indicator
+                v-if="buffer.getNetwork() && buffer.getNetwork().state === 'connected'"
+                :network="buffer.getNetwork()"
+                :user="buffer.getNetwork().currentUser()"
+            />
             <div v-if="currentNick" class="kiwi-controlinput-user" @click="toggleSelfUser">
                 <span class="kiwi-controlinput-user-nick">{{ currentNick }}</span>
                 <i
@@ -20,7 +27,11 @@
                     aria-hidden="true"
                 />
             </div>
-            <form class="kiwi-controlinput-form" @submit.prevent="submitForm">
+            <form
+                class="kiwi-controlinput-form"
+                @submit.prevent="submitForm"
+                @click="maybeHidePlugins"
+            >
                 <auto-complete
                     v-if="autocomplete_open"
                     ref="autocomplete"
@@ -42,26 +53,45 @@
                         @keyup="inputKeyUp($event)"
                         @click="closeInputTool"/>
                 </div>
-                <!--<button type="submit">Send</button>-->
+                <button
+                    v-if="shouldShowSendButton"
+                    type="submit"
+                    class="kiwi-controlinput-send fa fa-paper-plane" />
             </form>
+
             <div ref="plugins" class="kiwi-controlinput-tools">
-                <a class="kiwi-controlinput-tool" @click.prevent="onToolClickTextStyle">
-                    <i class="fa fa-adjust" aria-hidden="true"/>
-                </a>
-                <a class="kiwi-controlinput-tool" @click.prevent="onToolClickEmoji">
-                    <i class="fa fa-smile-o" aria-hidden="true"/>
-                </a>
                 <div
-                    v-rawElement="{
-                        el: plugin.el,
-                        props: {
-                            controlinput: self,
-                        }
-                    }"
-                    v-for="plugin in pluginUiElements"
-                    :key="plugin.id"
-                    class="kiwi-controlinput-tool"
-                />
+                    :class="{'kiwi-controlinput-tools-container-expand--inverse': !showPlugins}"
+                    class="kiwi-controlinput-tools-container-expand"
+                    @click="showPlugins=!showPlugins"
+                >
+                    <i class="fa fa-bars" aria-hidden="true" />
+                </div>
+                <transition name="kiwi-plugin-ui-trans">
+                    <div v-if="showPlugins" class="kiwi-controlinput-tools-container">
+                        <a class="kiwi-controlinput-tool" @click.prevent="onToolClickTextStyle">
+                            <i class="fa fa-adjust" aria-hidden="true"/>
+                        </a>
+                        <a
+                            v-if="shouldShowEmojiPicker"
+                            class="kiwi-controlinput-tool"
+                            @click.prevent="onToolClickEmoji"
+                        >
+                            <i class="fa fa-smile-o" aria-hidden="true"/>
+                        </a>
+                        <div
+                            v-rawElement="{
+                                el: plugin.el,
+                                props: {
+                                    controlinput: self,
+                                }
+                            }"
+                            v-for="plugin in pluginUiElements"
+                            :key="plugin.id"
+                            class="kiwi-controlinput-tool"
+                        />
+                    </div>
+                </transition>
             </div>
         </div>
 
@@ -72,8 +102,10 @@
 </template>
 
 <script>
+'kiwi public';
 
 import _ from 'lodash';
+import * as TextFormatting from '@/helpers/TextFormatting';
 import autocompleteCommands from '@/res/autocompleteCommands';
 import state from '@/libs/state';
 import GlobalApi from '@/libs/GlobalApi';
@@ -81,18 +113,19 @@ import AutoComplete from './AutoComplete';
 import ToolTextStyle from './inputtools/TextStyle';
 import ToolEmoji from './inputtools/Emoji';
 import SelfUser from './SelfUser';
+import AwayStatusIndicator from './AwayStatusIndicator';
 
 export default {
     components: {
         AutoComplete,
+        AwayStatusIndicator,
         SelfUser,
     },
     props: ['container', 'buffer'],
-    data: function data() {
+    data() {
         return {
             self: this,
             selfuser_open: false,
-            value: '',
             history: [],
             history_pos: 0,
             autocomplete_open: false,
@@ -108,10 +141,12 @@ export default {
             active_tool: null,
             active_tool_props: {},
             pluginUiElements: GlobalApi.singleton().controlInputPlugins,
+            showPlugins: true,
+            current_input_value: '',
         };
     },
     computed: {
-        currentNick: function currentNick() {
+        currentNick() {
             let activeNetwork = state.getActiveNetwork();
             return activeNetwork ?
                 activeNetwork.nick :
@@ -123,9 +158,15 @@ export default {
                 activeNetwork.state :
                 '';
         },
+        shouldShowSendButton() {
+            return this.$state.ui.is_touch || this.$state.setting('showSendButton');
+        },
+        shouldShowEmojiPicker() {
+            return this.$state.setting('showEmojiPicker') && !this.$state.ui.is_touch;
+        },
     },
     watch: {
-        history_pos: function watchhistoryPos(newVal) {
+        history_pos(newVal) {
             let val = this.history[this.history_pos];
             this.$refs.input.setValue(val || '');
         },
@@ -137,7 +178,7 @@ export default {
             this.autocomplete_open = false;
         },
     },
-    created: function created() {
+    created() {
         this.listen(state, 'document.keydown', (ev) => {
             // No input box currently? Nothing to shift focus to
             if (!this.$refs.input) {
@@ -146,6 +187,18 @@ export default {
 
             // If we're copying text, don't shift focus
             if (ev.ctrlKey || ev.altKey || ev.metaKey) {
+                return;
+            }
+
+            // shift key on its own, don't shift focus we handle this below
+            if (ev.keyCode === 16) {
+                return;
+            }
+
+            // If we are using shift and arrow keys, don't shift focus
+            // this allows users to adjust text selection
+            let arrowKeyCodes = [37, 38, 39, 40];
+            if (ev.shiftKey && arrowKeyCodes.indexOf(ev.keyCode) !== -1) {
                 return;
             }
 
@@ -161,17 +214,40 @@ export default {
 
             this.$refs.input.focus();
         });
+
+        this.listen(this.$state, 'input.insertnick', (nick) => {
+            if (!this.$refs.input) {
+                return;
+            }
+
+            let val = nick;
+            if (this.current_input_value === '') {
+                val += ': ';
+            } else {
+                val += ' ';
+            }
+
+            this.$refs.input.insertText(val);
+        });
+
+        this.listen(this.$state, 'input.tool', (toolComponent) => {
+            this.toggleInputTool(toolComponent);
+        });
     },
     mounted() {
         this.inputRestore();
     },
     methods: {
         inputUpdate(val) {
+            this.current_input_value = val;
+
             if (state.setting('buffers.shared_input')) {
                 state.ui.current_input = val;
             } else {
                 this.buffer.current_input = val;
             }
+
+            this.maybeHidePlugins();
         },
         inputRestore() {
             let currentInput = state.setting('buffers.shared_input') ?
@@ -186,16 +262,22 @@ export default {
                 this.selfuser_open = !this.selfuser_open;
             }
         },
-        onToolClickTextStyle: function onToolClickTextStyle() {
+        maybeHidePlugins() {
+            // Save some space if we're typing on a small screen
+            if (this.$state.ui.app_width < 500) {
+                this.showPlugins = false;
+            }
+        },
+        onToolClickTextStyle() {
             this.toggleInputTool(ToolTextStyle);
         },
         onToolClickEmoji() {
             this.toggleInputTool(ToolEmoji);
         },
-        closeInputTool: function closeInputTool() {
+        closeInputTool() {
             this.active_tool = null;
         },
-        toggleInputTool: function toggleInputTool(tool) {
+        toggleInputTool(tool) {
             if (!tool || this.active_tool === tool) {
                 this.active_tool = null;
             } else {
@@ -206,26 +288,35 @@ export default {
                 this.active_tool = tool;
             }
         },
-        onAutocompleteCancel: function onAutocompleteCancel() {
+        toggleBold() {
+            this.$refs.input.toggleBold();
+        },
+        toggleItalic() {
+            this.$refs.input.toggleItalic();
+        },
+        toggleUnderline() {
+            this.$refs.input.toggleUnderline();
+        },
+        onAutocompleteCancel() {
             this.autocomplete_open = false;
         },
-        onAutocompleteTemp: function onAutocompleteTemp(selectedValue, selectedItem) {
+        onAutocompleteTemp(selectedValue, selectedItem) {
             if (!this.autocomplete_filtering) {
                 this.$refs.input.setCurrentWord(selectedValue);
             }
         },
-        onAutocompleteSelected: function onAutocompleteSelected(selectedValue, selectedItem) {
+        onAutocompleteSelected(selectedValue, selectedItem) {
             let word = selectedValue;
             this.$refs.input.setCurrentWord(word);
             this.autocomplete_open = false;
         },
-        inputKeyDown: function inputKeyDown(event) {
+        inputKeyDown(event) {
             let meta = false;
 
             if (navigator.appVersion.indexOf('Mac') !== -1) {
                 meta = event.metaKey;
             } else {
-                meta = event.altKey;
+                meta = event.ctrlKey;
             }
 
             // If autocomplete has handled the event, don't also handle it here
@@ -292,19 +383,25 @@ export default {
                 // traditional IRC clients.
                 this.autocomplete_filtering = false;
                 event.preventDefault();
-            } else if (meta && event.keyCode === 221) {
-                // meta + ]
-                // TODO: Switch to the next buffer
-            } else if (meta && event.keyCode === 219) {
-                // meta + [
-                // TODO: Switch to the previous buffer
             } else if (meta && event.keyCode === 75) {
                 // meta + k
                 this.toggleInputTool(ToolTextStyle);
                 event.preventDefault();
+            } else if (meta && event.keyCode === 66) {
+                // meta + b
+                this.toggleBold();
+                event.preventDefault();
+            } else if (meta && event.keyCode === 73) {
+                // meta + i
+                this.toggleItalic();
+                event.preventDefault();
+            } else if (meta && event.keyCode === 85) {
+                // meta + u
+                this.toggleUnderline();
+                event.preventDefault();
             }
         },
-        inputKeyUp: function inputKeyUp(event) {
+        inputKeyUp(event) {
             let inputVal = this.$refs.input.getRawText();
             let currentWord = this.$refs.input.getCurrentWord();
             let currentToken = currentWord.word.substr(0, currentWord.position);
@@ -347,7 +444,7 @@ export default {
                 this.autocomplete_filter = currentToken;
             }
         },
-        submitForm: function submitForm() {
+        submitForm() {
             let rawInput = this.$refs.input.getValue();
             if (!rawInput) {
                 return;
@@ -361,28 +458,27 @@ export default {
             this.history.splice(0, this.history.length - 50);
             this.history_pos = this.history.length;
 
-            this.value = '';
             this.$refs.input.reset();
         },
-        historyBack: function historyBack() {
+        historyBack() {
             if (this.history_pos > 0) {
                 this.history_pos--;
             }
         },
-        historyForward: function historyForward() {
+        historyForward() {
             // Purposely let history_pos go 1 index beyond the history length
             // so that we can detect if we're not currently using a history value
             if (this.history_pos < this.history.length) {
                 this.history_pos++;
             }
         },
-        openAutoComplete: function openAutoComplete(items) {
+        openAutoComplete(items) {
             if (state.setting('showAutocomplete')) {
                 this.autocomplete_items = items;
                 this.autocomplete_open = true;
             }
         },
-        buildAutoCompleteItems: function buildAutoCompleteItems(_opts) {
+        buildAutoCompleteItems(_opts) {
             let opts = _opts || {};
             let list = [];
 
@@ -422,10 +518,16 @@ export default {
             if (opts.commands) {
                 let commandList = [];
                 autocompleteCommands.forEach((command) => {
+                    // allow descriptions to be translation keys or static strings
+                    let desc = command.description.startsWith('locale_id_') ?
+                        TextFormatting.t(command.description.substr(10)) :
+                        command.description;
                     commandList.push({
                         text: '/' + command.command,
-                        description: command.description,
+                        description: desc,
                         type: 'command',
+                        // Each alias needs the / command prefix adding
+                        alias: (command.alias || []).map(c => '/' + c),
                     });
                 });
 
@@ -448,10 +550,20 @@ export default {
 .kiwi-controlinput-inner {
     padding: 0;
     box-sizing: border-box;
+    transition: width 0.2s;
+    transition-delay: 0.2s;
 }
 
 .kiwi-controlinput-inner i {
     font-size: 120%;
+    margin-left: 8px;
+    margin-right: 2px;
+}
+
+.kiwi-controlinput-inner .kiwi-awaystatusindicator {
+    margin-top: 16px;
+    margin-left: 10px;
+    margin-right: -2px;
 }
 
 .kiwi-controlinput-user {
@@ -462,18 +574,40 @@ export default {
     cursor: pointer;
     margin-right: 10px;
     line-height: 40px;
+    transition: width 0.2s;
+    transition-delay: 0.1s;
+}
+
+.kiwi-controlinput-selfuser--open .kiwi-controlinput-user {
+    width: 286px;
+    transition: width 0.2s;
+    transition-delay: 0.1s;
 }
 
 .kiwi-controlinput-tools {
-    line-height: 40px;
+    /* 38px = 40px controlinput height - margin top+botton */
+    line-height: 38px;
+    margin: 2px 0 2px 10px;
+    border-radius: 7px 0 0 7px;
     cursor: pointer;
-    margin-left: 10px;
 }
 
 .kiwi-controlinput-form {
-    padding: 8px 0 0 0;
     flex: 1;
     overflow: hidden;
+    display: flex;
+}
+
+.kiwi-controlinput-send {
+    border: none;
+    border-radius: 7px;
+    margin: 2px 0;
+    padding: 0;
+    height: 35px;
+    text-align: center;
+    width: 35px;
+    cursor: pointer;
+    outline: none;
 }
 
 .kiwi-controlinput-inner {
@@ -496,6 +630,7 @@ export default {
     height: 100%;
     box-sizing: border-box;
     overflow: visible;
+    padding-top: 8px;
 }
 
 .kiwi-controlinput-tool {
@@ -511,31 +646,87 @@ export default {
     position: absolute;
     bottom: 100%;
     right: 0;
+    width: 100%;
     z-index: 1;
 }
 
 .kiwi-controlinput-selfuser {
     position: absolute;
-    bottom: 100%;
+    bottom: 0;
+    z-index: 10;
     left: 0;
     max-height: 0;
-    transition: max-height 0.2s;
+    width: 324px;
+    box-sizing: border-box;
+    border-radius: 0 6px 0 0;
+    opacity: 0;
     overflow: hidden;
 }
 
-.kiwi-controlinput-selfuser--open {
+.kiwi-controlinput-selfuser--open .kiwi-controlinput-selfuser {
+    width: 324px;
     max-height: 300px;
+    opacity: 1;
 }
 
-@media screen and (max-width: 769px) {
-    .kiwi-controlinput {
-        z-index: 0;
-    }
+.kiwi-selfuser-trans-enter,
+.kiwi-selfuser-trans-leave-to {
+    opacity: 0;
+    height: 0;
+}
+
+.kiwi-selfuser-trans-enter-to,
+.kiwi-selfuser-trans-leave {
+    opacity: 1;
+}
+
+.kiwi-selfuser-trans-enter-active,
+.kiwi-selfuser-trans-leave-active {
+    transition: all 0.4s;
 }
 
 @media screen and (max-width: 500px) {
     .kiwi-controlinput-user-nick {
         display: none;
+    }
+}
+
+.kiwi-controlinput-tools-container-expand {
+    display: inline-block;
+    padding: 0 1em;
+}
+
+.kiwi-controlinput-tools-container-expand i {
+    transition: transform 0.2s;
+}
+
+.kiwi-controlinput-tools-container-expand--inverse i {
+    transform: rotateZ(180deg);
+}
+
+.kiwi-controlinput-tools-container {
+    position: relative;
+    display: inline-block;
+}
+
+.kiwi-plugin-ui-trans-enter,
+.kiwi-plugin-ui-trans-leave-to {
+    right: -100%;
+}
+
+.kiwi-plugin-ui-trans-enter-to,
+.kiwi-plugin-ui-trans-leave {
+    right: 0;
+}
+
+.kiwi-plugin-ui-trans-enter-active,
+.kiwi-plugin-ui-trans-leave-active {
+    transition: right 0.2s;
+}
+
+@media screen and (max-width: 769px) {
+    .kiwi-controlinput-selfuser--open .kiwi-controlinput-selfuser {
+        width: 100%;
     }
 }
 

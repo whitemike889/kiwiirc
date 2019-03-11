@@ -7,8 +7,8 @@
         </div>
 
         <form class="u-form">
-            <tabbed-view class="kiwi-appsettings-tab-container">
-                <tabbed-tab :header="$t('settings_general')" :focus="true">
+            <tabbed-view ref="tabs" class="kiwi-appsettings-tab-container">
+                <tabbed-tab :header="$t('settings_general')" :focus="true" name="general">
 
                     <div class="kiwi-appsettings-block">
                         <h3>{{ $t('settings_general') }}</h3>
@@ -50,9 +50,13 @@
                     <div class="kiwi-appsettings-block">
                         <h3>{{ $t('settings_messages_title') }}</h3>
                         <div class="kiwi-appsettings-section kiwi-appsettings-messages">
-                            <label class="u-checkbox-wrapper">
-                                <span>{{ $t('settings_layout_compact') }} </span>
-                                <input v-model="settingMessageLayout" type="checkbox" >
+                            <label class="kiwi-appsettings-messagelistDisplay">
+                                <span>{{ $t('settings_messagelayout') }} </span>
+                                <select v-model="settingMessageLayout">
+                                    <option value="traditional">Traditional</option>
+                                    <option value="modern">Modern</option>
+                                    <option value="inline">Inline</option>
+                                </select>
                             </label>
                             <label class="u-checkbox-wrapper">
                                 <span>{{ $t('settings_timestamps') }} </span>
@@ -122,9 +126,26 @@
                             </label>
                         </div>
                     </div>
+                    <div v-if="!state.setting('hide_advanced') && !settingAdvancedEnable"
+                         class="kiwi-appsettings-block">
+                        <h3>{{ $t('settings_advanced_title') }}</h3>
+                        <div class="kiwi-appsettings-section kiwi-appsettings-advanced-enable">
+                            <div>
+                                <span style="font-weight: 600;">
+                                    {{ $t('warning') }}
+                                </span>
+                                {{ $t('settings_advanced_warning') }}
+                            </div>
+                            <div style="margin-top: 10px; text-align: center;">
+                                <a class="u-button u-button-warning" @click="enableAdvancedTab()">
+                                    <i>{{ $t('settings_advanced_button') }}</i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </tabbed-tab>
 
-                <tabbed-tab :header="$t('settings_aliases')">
+                <tabbed-tab :header="$t('settings_aliases')" name="aliases">
                     <div class="kiwi-appsettings-block kiwi-appsettings-block-aliases">
                         <h3>{{ $t('settings_aliases') }}</h3>
                         <div class="kiwi-appsettings-section kiwi-appsettings-aliases">
@@ -132,7 +153,23 @@
                         </div>
                     </div>
                 </tabbed-tab>
-                <tabbed-tab v-for="item in pluginUiElements" :key="item.id" :header="item.title">
+
+                <tabbed-tab
+                    v-if="settingAdvancedEnable"
+                    :header="$t('settings_advanced')"
+                    name="advanced">
+                    <div class="kiwi-appsettings-block kiwi-appsettings-block-advanced">
+                        <div class="kiwi-appsettings-section kiwi-appsettings-advanced">
+                            <settings-advanced/>
+                        </div>
+                    </div>
+                </tabbed-tab>
+
+                <tabbed-tab
+                    v-for="item in pluginUiElements"
+                    :key="item.id"
+                    :header="item.title"
+                    :name="item.title">
                     <div :is="item.component" v-bind="item.props"/>
                 </tabbed-tab>
             </tabbed-view>
@@ -141,11 +178,14 @@
 </template>
 
 <script>
+'kiwi public';
 
+import _ from 'lodash';
 import state from '@/libs/state';
 import ThemeManager from '@/libs/ThemeManager';
 import GlobalApi from '@/libs/GlobalApi';
 import SettingsAliases from './SettingsAliases';
+import SettingsAdvanced from './SettingsAdvanced';
 
 /**
  * Returns an object for a vuejs computated property on a state settings value
@@ -165,6 +205,7 @@ function bindSetting(settingName) {
 export default {
     components: {
         SettingsAliases,
+        SettingsAdvanced,
     },
     data: function data() {
         return {
@@ -208,16 +249,30 @@ export default {
         settingBufferMuteSound: bindSetting('buffers.mute_sound'),
         settingDefaultBanMask: bindSetting('buffers.default_ban_mask'),
         settingDefaultKickReason: bindSetting('buffers.default_kick_reason'),
-        settingMessageLayout: {
-            get: function getSettingMessageLayout() {
-                return state.setting('messageLayout') === 'compact';
+        settingAdvancedEnable: {
+            get: function getSettingShowAdvancedTab() {
+                return state.ui.show_advanced_tab;
             },
+            set: function setSettingShowAdvancedTab(newVal) {
+                state.ui.show_advanced_tab = newVal;
+            },
+        },
+        messageLayouts() {
+            return {
+                traditional: 'compact',
+                modern: 'modern',
+                inline: 'inline',
+            };
+        },
+        settingMessageLayout: {
             set: function setSettingMessageLayout(newVal) {
-                if (newVal) {
-                    state.setting('messageLayout', 'compact');
-                } else {
-                    state.setting('messageLayout', 'modern');
-                }
+                let l = this.messageLayouts;
+                state.setting('buffers.messageLayout', l[newVal] || l.modern);
+            },
+            get() {
+                let s = state.setting('buffers.messageLayout');
+                let l = _.invert(this.messageLayouts);
+                return l[s];
             },
         },
     },
@@ -276,6 +331,13 @@ export default {
                 this.$watch('customThemeUrl', watchCustomThemeUrl),
             ];
         },
+        enableAdvancedTab() {
+            this.settingAdvancedEnable = true;
+            this.$nextTick(() => {
+                this.$refs.tabs.setActiveByName('advanced');
+                this.$el.scrollTop = 0;
+            });
+        },
     },
 };
 </script>
@@ -321,7 +383,6 @@ export default {
 
 .u-form .kiwi-appsettings-setting-scrollback input {
     box-sizing: border-box;
-    line-height: 30px;
     height: 40px;
     border: 1px solid;
     float: left;
@@ -368,6 +429,11 @@ export default {
     display: block;
     box-sizing: border-box;
     margin: 20px auto 20px auto;
+}
+
+.kiwi-appsettings-block.kiwi-appsettings-block-advanced {
+    max-width: inherit;
+    margin: 20px;
 }
 
 .kiwi-appsettings-block h3 {
@@ -420,6 +486,10 @@ export default {
     font-size: 1.5em;
     float: right;
     line-height: 47px;
+}
+
+.kiwi-appsettings-messagelistDisplay select {
+    float: right;
 }
 
 @media screen and (max-width: 769px) {

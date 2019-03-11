@@ -15,22 +15,21 @@
             <div class="kiwi-network-name-options">
                 <div
                     v-if="totalNetworkCount > 1"
-                    class="option-button kiwi--collapse"
+                    class="kiwi-network-name-option kiwi-network-name-option-collapse"
                     @click="collapsed=!collapsed"
                 >
                     <i :class="[collapsed?'fa-plus-square-o':'fa-minus-square-o']" class="fa" />
                 </div>
                 <div
                     :class="{ active: channel_add_display == true }"
-                    class="option-button kiwi--channel"
+                    class="kiwi-network-name-option kiwi-network-name-option-channel"
                     @click="toggleAddChannel()"
                 >
                     <i class="fa fa-plus" aria-hidden="true"/>
                 </div>
                 <div
-                    v-if="network.buffers.length > 1"
                     :class="{ active: channel_filter_display == true }"
-                    class="option-button kiwi-search-channels"
+                    class="kiwi-network-name-option kiwi-network-name-option-chanfilter"
                     @click="toggleFilterChannel()"
                 >
                     <i class="fa fa-search" aria-hidden="true"/>
@@ -108,7 +107,7 @@
 
             <div class="kiwi-statebrowser-channels">
                 <div
-                    v-for="buffer in filteredBuffers(network.buffers)"
+                    v-for="buffer in filteredBuffers"
                     :key="buffer.name"
                     :data-name="buffer.name.toLowerCase()"
                     :class="{
@@ -118,6 +117,11 @@
                     class="kiwi-statebrowser-channel"
                 >
                     <div class="kiwi-statebrowser-channel-name" @click="setActiveBuffer(buffer)">
+                        <i v-if="buffer.isQuery() && !awayNotifySupported()"
+                           class="fa fa-user" aria-hidden="true" />
+                        <away-status-indicator
+                            v-if="buffer.isQuery() && awayNotifySupported()"
+                            :network="network" :user="network.userByName(buffer.name)"/>
                         {{ buffer.name }}
                     </div>
                     <div class="kiwi-statebrowser-channel-labels">
@@ -136,14 +140,6 @@
                         </transition>
                     </div>
 
-                    <div
-                        v-if="buffer.isChannel()"
-                        class="kiwi-statebrowser-channel-settings"
-                        @click="showBufferSettings(buffer)"
-                    >
-                        <i class="fa fa-cog" aria-hidden="true"/>
-                    </div>
-
                     <div class="kiwi-statebrowser-channel-leave" @click="closeBuffer(buffer)">
                         <i class="fa fa-times" aria-hidden="true"/>
                     </div>
@@ -154,17 +150,21 @@
 </template>
 
 <script>
+'kiwi public';
 
 import _ from 'lodash';
 import state from '@/libs/state';
 import * as Misc from '@/helpers/Misc';
+import * as bufferTools from '@/libs/bufferTools';
 import BufferSettings from './BufferSettings';
+import AwayStatusIndicator from './AwayStatusIndicator';
 
 export default {
     components: {
         BufferSettings,
+        AwayStatusIndicator,
     },
-    props: ['network', 'uiState'],
+    props: ['network', 'sidebarState'],
     data: function data() {
         return {
             collapsed: false,
@@ -181,6 +181,21 @@ export default {
         },
         totalNetworkCount() {
             return state.networks.length;
+        },
+        filteredBuffers() {
+            let filter = this.channel_filter;
+            let filtered = [];
+
+            if (!filter) {
+                filtered = this.network.buffers;
+            } else {
+                filtered = _.filter(this.network.buffers, (buffer) => {
+                    let name = buffer.name.toLowerCase();
+                    return name.indexOf(filter) > -1;
+                });
+            }
+
+            return bufferTools.orderBuffers(filtered);
         },
     },
     methods: {
@@ -244,11 +259,14 @@ export default {
                 // link as it has been removed before the event reaches it.
                 setTimeout(() => {
                     this.closeFilterChannel();
-                }, 100);
+                }, 200);
             }
         },
         closeBuffer(buffer) {
             state.removeBuffer(buffer);
+        },
+        awayNotifySupported() {
+            return this.network.ircClient.network.cap.isEnabled('away-notify');
         },
         showMessageCounts: function showMessageCounts(buffer) {
             return !buffer.setting('hide_message_counts');
@@ -264,51 +282,11 @@ export default {
                 buffer.name === state.ui.active_buffer
             );
         },
-        orderedBuffers: function orderedBuffers(buffers) {
-            // Since vuejs will sort in-place and update views when .sort is called
-            // on an array, clone it first so that we have a plain array to sort
-            let list = buffers.map(b => b);
-
-            list = _.filter(list, buffer => !buffer.isServer());
-            list = list.sort((a, b) => {
-                let order = 0;
-                if (a.isChannel() && b.isQuery()) {
-                    order = -1;
-                } else if (a.isQuery() && b.isChannel()) {
-                    order = 1;
-                } else {
-                    order = a.name.localeCompare(b.name);
-                }
-
-                return order;
-            });
-
-            return list;
-        },
-        filteredBuffers(buffers) {
-            let filter = this.channel_filter;
-            let filtered = [];
-
-            if (!filter) {
-                filtered = buffers;
-            } else {
-                filtered = _.filter(buffers, (buffer) => {
-                    let name = buffer.name.toLowerCase();
-                    return name.indexOf(filter) > -1;
-                });
-            }
-
-            return this.orderedBuffers(filtered);
-        },
-        showNetworkSettings: function showNetworkSettings(network) {
+        showNetworkSettings(network) {
             network.showServerBuffer('settings');
         },
         showNetworkChannels(network) {
             network.showServerBuffer('channels');
-        },
-        showBufferSettings(buffer) {
-            this.setActiveBuffer(buffer);
-            this.uiState.showBufferSettings();
         },
         toggleAddChannel() {
             this.channel_add_display = !this.channel_add_display;
@@ -388,7 +366,7 @@ export default {
     opacity: 1;
 }
 
-.kiwi-network-name-options .option-button {
+.kiwi-network-name-option {
     float: right;
     width: 35px;
     transition: all 0.15s;
@@ -426,6 +404,7 @@ export default {
 .kiwi-statebrowser-channel {
     position: relative;
     display: flex;
+    border-left: 3px solid transparent;
 }
 
 .kiwi-statebrowser-channel:hover .kiwi-statebrowser-channel-name {
@@ -468,18 +447,6 @@ export default {
 .kiwi-statebrowser-channel-label-transition-enter,
 .kiwi-statebrowser-channel-label-transition-leave-active {
     opacity: 0;
-}
-
-.kiwi-statebrowser-channel-settings {
-    display: block;
-    height: 100%;
-    width: 35px;
-    opacity: 0;
-    text-align: center;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-    z-index: 10;
 }
 
 .kiwi-statebrowser-channel-leave {

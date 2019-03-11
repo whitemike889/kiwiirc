@@ -1,3 +1,5 @@
+'kiwi public';
+
 import * as TextFormatting from '@/helpers/TextFormatting';
 import formatIrcMessage from '@/libs/MessageFormatter';
 import GlobalApi from '@/libs/GlobalApi';
@@ -21,6 +23,8 @@ export default class Message {
         this.html = '';
         // template should be null or a Vue component to render this message
         this.template = null;
+        // bodyTemplate should be null or a Vue component to render in the body of the message
+        this.bodyTemplate = null;
         this.isHighlight = false;
 
         // We don't want the user object to be enumerable

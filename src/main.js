@@ -4,6 +4,9 @@ import i18next from 'i18next';
 import i18nextXHR from 'i18next-xhr-backend';
 import VueI18Next from '@panter/vue-i18next';
 
+// fetch polyfill
+import 'whatwg-fetch';
+
 import AvailableLocales from '@/res/locales/available.json';
 import FallbackLocale from '@/../static/locales/en-us.json';
 import App from '@/components/App';
@@ -12,9 +15,14 @@ import Logger from '@/libs/Logger';
 import ConfigLoader from '@/libs/ConfigLoader';
 import state from '@/libs/state';
 import ThemeManager from '@/libs/ThemeManager';
+import InputHandler from '@/libs/InputHandler';
 import StatePersistence from '@/libs/StatePersistence';
 import * as Storage from '@/libs/storage/Local';
+import * as Misc from '@/helpers/Misc';
 import GlobalApi from '@/libs/GlobalApi';
+import { AudioManager } from '@/libs/AudioManager';
+import { SoundBleep } from '@/libs/SoundBleep';
+import { configTemplates } from '@/res/configTemplates';
 
 // Global utilities
 import '@/components/utils/TabbedView';
@@ -70,6 +78,15 @@ Vue.mixin({
                 (source.$off || source.off).call(source, event, fn);
             });
             (source.$once || source.once).call(source, event, fn);
+        },
+    },
+});
+
+// Make the state available to all components by default
+Vue.mixin({
+    computed: {
+        $state() {
+            return state;
         },
     },
 });
@@ -158,17 +175,33 @@ function loadApp() {
     }
 
     let configLoader = new ConfigLoader();
+    configLoader
+        .addValueReplacement('hostname', window.location.hostname)
+        .addValueReplacement('host', window.location.hostname)
+        .addValueReplacement('host', window.location.host)
+        .addValueReplacement('port', window.location.port || 80)
+        .addValueReplacement('hash', (window.location.hash || '').substr(1))
+        .addValueReplacement('query', (window.location.search || '').substr(1))
+        .addValueReplacement('referrer', window.document.referrer);
+
     (configObj ? configLoader.loadFromObj(configObj) : configLoader.loadFromUrl(configFile))
         .then(applyConfig)
         .then(initState)
+        .then(initInputCommands)
         .then(initLocales)
         .then(initThemes)
         .then(loadPlugins)
+        .then(initSound)
         .then(startApp)
         .catch(showError);
 }
 
 function applyConfig(config) {
+    Misc.dedotObject(config);
+    // if we have a config template apply that before other configs
+    if (configTemplates[config.template]) {
+        applyConfigObj(configTemplates[config.template], state.settings);
+    }
     applyConfigObj(config, state.settings);
 
     // Update the window title if we have one
@@ -214,17 +247,46 @@ function loadPlugins() {
                 return;
             }
 
-            let scr = document.createElement('script');
-            scr.onerror = () => {
-                log.error(`Error loading plugin '${plugin.name}' from '${plugin.url}'`);
-                loadNextScript();
-            };
-            scr.onload = () => {
-                loadNextScript();
-            };
+            if (plugin.url.indexOf('.js') > -1) {
+                // The plugin is a .js file so inject it as a script
+                let scr = document.createElement('script');
+                scr.onerror = () => {
+                    log.error(`Error loading plugin '${plugin.name}' from '${plugin.url}'`);
+                    loadNextScript();
+                };
+                scr.onload = () => {
+                    loadNextScript();
+                };
 
-            document.body.appendChild(scr);
-            scr.src = plugin.url;
+                document.body.appendChild(scr);
+                scr.src = plugin.url;
+            } else {
+                // Treat the plugin as a HTML document and just inject it into the document
+                fetch(plugin.url).then(response => response.text()).then((pluginRaw) => {
+                    let el = document.createElement('div');
+                    el.id = 'kiwi_plugin_' + plugin.name.replace(/[ "']/g, '');
+                    el.style.display = 'none';
+                    el.innerHTML = pluginRaw;
+
+                    // The browser won't execute any script elements so we need to extract them and
+                    // place them into the DOM using our own script elements
+                    let scripts = [...el.querySelectorAll('script')];
+
+                    // IE11 does not support nodes.forEach()
+                    scripts.forEach((limitedScr) => {
+                        limitedScr.parentElement.removeChild(limitedScr);
+                        let scr = document.createElement('script');
+                        scr.text = limitedScr.text;
+                        el.appendChild(scr);
+                    });
+
+                    document.body.appendChild(el);
+                    loadNextScript();
+                }).catch(() => {
+                    log.error(`Error loading plugin '${plugin.name}' from '${plugin.url}'`);
+                    loadNextScript();
+                });
+            }
         }
     });
 }
@@ -337,6 +399,19 @@ function initThemes() {
     }
 }
 
+function initSound() {
+    let sound = new SoundBleep();
+    let bleep = new AudioManager(sound);
+
+    bleep.listen(state);
+    bleep.watchForMessages(state);
+}
+
+function initInputCommands() {
+    /* eslint-disable no-new */
+    new InputHandler(state);
+}
+
 function startApp() {
     api.emit('init');
 
@@ -360,6 +435,9 @@ function showError(err) {
     /* eslint-disable no-new */
     new Vue({
         el: '#app',
-        render: h => h(StartupError),
+        render: h => h(
+            StartupError,
+            { props: { error: err } },
+        ),
     });
 }

@@ -7,7 +7,7 @@
 
         <template v-if="!shouldShowLoading">
             <div class="kiwi-notconnected-caption">
-                <span>You are not currently connected!</span>
+                <span>{{ $t('not_connected') }}</span>
             </div>
             <div class="kiwi-notconnected-buttons">
                 <template v-if="isChannel()">
@@ -46,20 +46,20 @@
 
 <script>
 
-import state from '@/libs/state';
+'kiwi public';
 
 export default {
     props: ['buffer', 'network'],
-    data: function data() {
+    data() {
         return {
             forceLoader: false,
         };
     },
     computed: {
-        netStatus: function netStatus() {
+        netStatus() {
             return this.buffer.getNetwork().state;
         },
-        shouldShowLoading: function showShowLoading() {
+        shouldShowLoading() {
             this.maybeForceLoader();
 
             if (this.network.state !== 'disconnected' || this.forceLoader) {
@@ -69,7 +69,7 @@ export default {
             return false;
         },
         restrictedServer() {
-            return state.setting('restricted');
+            return this.$state.setting('restricted');
         },
     },
     methods: {
@@ -88,22 +88,22 @@ export default {
                 }, minimumLoaderViewtime);
             }
         },
-        isChannel: function isChannel() {
+        isChannel() {
             return this.buffer.isChannel();
         },
-        isServer: function isServer() {
+        isServer() {
             return this.buffer.isServer();
         },
-        isQuery: function isQuery() {
+        isQuery() {
             return this.buffer.isQuery();
         },
-        reconnect: function reconnect() {
+        reconnect() {
             if (this.buffer.isChannel()) {
                 this.buffer.enabled = true;
             }
             this.buffer.getNetwork().ircClient.connect();
         },
-        showNetworkSettings: function showNetworkSettings() {
+        showNetworkSettings() {
             let network = this.buffer.getNetwork();
             network.showServerBuffer('settings');
         },
@@ -115,15 +115,14 @@ export default {
 .kiwi-notconnected {
     box-sizing: border-box;
     text-align: center;
-    padding: 10% 0;
-    margin: 10px 0 0 0;
+    padding: 2% 0;
+    margin: 0;
     transition: background-color 0.3s;
 }
 
 .kiwi-notconnected-bigicon {
     display: inline-block;
-    width: 100%;
-    margin: 0 0 1em 0;
+    margin: 0 0 0.5em 0;
 }
 
 .kiwi-notconnected-bigicon i {
@@ -143,7 +142,7 @@ export default {
     width: 100%;
     text-align: center;
     font-size: 1.6em;
-    padding-top: 1em;
+    padding-top: 0.5em;
 }
 
 .kiwi-notconnected-button {

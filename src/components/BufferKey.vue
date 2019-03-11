@@ -14,6 +14,7 @@
 </template>
 
 <script>
+'kiwi public';
 
 export default {
     props: ['buffer', 'network'],
@@ -50,6 +51,7 @@ export default {
 .kiwi-bufferkey input[type="password"] {
     height: 40px;
     padding: 0 10px;
+    border-radius: 4px;
     color: #000;
     border: none;
     width: 320px;

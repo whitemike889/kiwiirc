@@ -1,6 +1,6 @@
 <template>
     <div class="u-tabbed-view">
-        <div :key="a" class="u-tabbed-view-tabs">
+        <div :key="prefixID + a" class="u-tabbed-view-tabs">
             <a
                 v-for="c in tabs"
                 :key="c.name || c.header"
@@ -16,6 +16,7 @@
 </template>
 
 <script>
+'kiwi public';
 
 let Vue = require('vue');
 
@@ -32,25 +33,18 @@ Vue.component('tabbed-tab', {
 });
 
 export default Vue.component('tabbed-view', {
-    props: {
-        activeTab: { status: String },
-    },
     data: function data() {
         return {
             // We increment this when we need to re-render the tabs.
             // Vue doesn't pick up on the $children changes all the time so we handle
             // it ourselves.
             a: 1,
+            prefixID: Math.floor(Math.random() * 100000).toString(36),
         };
     },
     computed: {
         tabs: function computedtabs() {
             return this.$children;
-        },
-    },
-    watch: {
-        activeTab(newVal) {
-            this.setActiveCheck();
         },
     },
     mounted() {
@@ -86,15 +80,11 @@ export default Vue.component('tabbed-view', {
             });
         },
         setActiveCheck: function setActiveCheck() {
-            if (this.activeTab) {
-                this.setActiveByName(this.activeTab);
-            } else {
-                this.$children.forEach((t) => {
-                    if (t.focus) {
-                        this.setActive(t);
-                    }
-                });
-            }
+            this.$children.forEach((t) => {
+                if (t.focus) {
+                    this.setActive(t);
+                }
+            });
         },
     },
 });

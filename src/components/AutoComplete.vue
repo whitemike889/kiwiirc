@@ -33,6 +33,7 @@
 </template>
 
 <script>
+'kiwi public';
 
 import _ from 'lodash';
 import state from '@/libs/state';
@@ -60,6 +61,12 @@ export default {
                 if (item.text.toLowerCase().indexOf(filterVal) === 0) {
                     s = true;
                 }
+
+                (item.alias || []).forEach((alias) => {
+                    if (alias.toLowerCase().indexOf(filterVal) === 0) {
+                        s = true;
+                    }
+                });
 
                 return s;
             })

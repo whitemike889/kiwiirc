@@ -6,6 +6,18 @@
                 <textarea v-model.lazy="topic" rows="2"/>
             </label>
 
+            <div v-if="buffer.topics.length > 1" class="kiwi-channelinfo-previoustopics">
+                <a class="u-link" @click="showPrevTopics = !showPrevTopics">
+                    Previous topics
+                    <i :class="'fa fa-caret-' + (showPrevTopics ? 'up' : 'down')" />
+                </a>
+                <ul v-if="showPrevTopics">
+                    <li v-for="(topic, idx) in buffer.topics" :key="idx">
+                        <span>{{ topic }}</span>
+                    </li>
+                </ul>
+            </div>
+
             <label class="u-checkbox-wrapper">
                 <span>{{ $t('channel_moderated') }}</span>
                 <input v-model="modeM" type="checkbox" >
@@ -31,6 +43,7 @@
 </template>
 
 <script>
+'kiwi public';
 
 // Helper to generate Vues computed methods for simple channel modes.
 // Eg. +i, +n, etc
@@ -69,6 +82,7 @@ export default {
     props: ['buffer'],
     data: function data() {
         return {
+            showPrevTopics: false,
         };
     },
     computed: {
@@ -86,17 +100,6 @@ export default {
                 this.buffer.getNetwork().ircClient.setTopic(this.buffer.name, newTopic);
             },
         },
-    },
-    updated: function updated() {
-        let rect = this.$el.getBoundingClientRect();
-        // $el may be in the middle of a transition still, making rect.top/rect.bottom
-        // the current position of the transition and not where it will be after the
-        // transition has ended. So read the top property directly from its style.
-        let targetTop = parseInt((this.$el.style.top || '').replace('px', ''), 10);
-
-        if (targetTop + rect.height > window.innerHeight) {
-            this.$el.style.top = (window.innerHeight - rect.height) + 'px';
-        }
     },
     methods: {
         updateBanList: function updateBanList() {
@@ -127,3 +130,15 @@ export default {
     },
 };
 </script>
+
+<style>
+
+.kiwi-channelinfo-previoustopics {
+    margin: 0 10px 15px 10px;
+}
+
+.kiwi-channelinfo-previoustopics ul {
+    margin-top: 0;
+}
+
+</style>
