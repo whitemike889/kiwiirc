@@ -1,9 +1,26 @@
+/**
+ * Configuration templates
+ *
+ * All the default values for config options throughout kiwi are set here, under
+ * the 'default' template object below.
+ * If a 'default.template' value is set in the user config, this is used to
+ * find the next template object below and is merged over the default config
+ * template.
+ * The user config (config.json by default) is then merged over the resulting
+ * config object.
+ *
+ * The advanced settings dialog also displays these settings by iterating
+ * through the keys. The values must not be null otherwise they will not be
+ * shown.
+ */
+
 export const configTemplates = {
 
     default: {
         plugins: [],
         windowTitle: 'Kiwi IRC - The web IRC client',
         useMonospace: false,
+        language: '',
         theme: 'Default',
         themes: [
             { name: 'Default', url: 'static/themes/default' },
@@ -28,7 +45,7 @@ export const configTemplates = {
         warnOnExit: true,
         // Default buffer settings
         buffers: {
-            messageLayout: 'compact',
+            messageLayout: 'modern',
             alert_on: 'highlight',
             timestamp_format: '%H:%M:%S',
             // If timestamp_full_format is falsy, the browsers locale date format will be used
@@ -54,6 +71,8 @@ export const configTemplates = {
             shared_input: false,
             show_message_info: true,
             who_loop: true,
+            share_typing: true,
+            flash_title: true,
         },
         // Startup screen default
         startupOptions: {
@@ -66,12 +85,18 @@ export const configTemplates = {
             state_key: 'kiwi-state',
             nick_format: '',
         },
+        disconnectOnSaslFail: true,
+        allowRegisterProtocolHandler: false,
         noticeActiveBuffer: true,
+        showChanlistModes: false,
         showAutocomplete: true,
         showEmojiPicker: true,
+        showColorPicker: false,
         showSendButton: false,
-        sidebarDefault: '',
+        showAwayStatusIndicators: true,
+        sidebarDefault: 'nicklist',
         showRaw: false,
+        hideSettings: null,
         highlights: '',
         teamHighlights: false,
         aliases: `
@@ -247,8 +272,8 @@ export const configTemplates = {
             mode: 'ⓘ %text',
             selfmode: 'ⓘ %nick %text',
             nickname_alreadyinuse: '⚠ %text',
-            network_disconnected: '⚠ %text',
-            network_connected: '⚠ %text',
+            network_disconnected: '%text',
+            network_connected: '%text',
             whois_channels: '%text',
             whois_idle_and_signon: '%text',
             whois_away: '%text',
@@ -304,6 +329,7 @@ export const configTemplates = {
             colour_nicknames_in_messages: false,
             show_emoticons: false,
             show_message_info: false,
+            share_typing: false,
         },
     },
 

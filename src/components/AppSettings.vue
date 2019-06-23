@@ -13,6 +13,17 @@
                     <div class="kiwi-appsettings-block">
                         <h3>{{ $t('settings_general') }}</h3>
                         <div class="kiwi-appsettings-section kiwi-appsettings-general">
+                            <label class="kiwi-appsettings-setting-language">
+                                <div><i class="fa fa-globe" /></div>
+                                <select v-model="settingLanguage">
+                                    <option value="">
+                                        Auto
+                                    </option>
+                                    <option v-for="l in localesList" :value="l[0]" :key="l[0]">
+                                        {{ l[1] }}
+                                    </option>
+                                </select>
+                            </label>
                             <label class="kiwi-appsettings-setting-theme">
                                 <span>{{ $t('settings_theme') }} </span>
                                 <a
@@ -44,6 +55,17 @@
                                 <span>{{ $t('settings_use_monospace') }} </span>
                                 <input v-model="settingUseMonospace" type="checkbox" >
                             </label>
+                            <div
+                                v-if="canRegisterProtocolHandler"
+                                style="margin-top: 10px; text-align: center;"
+                            >
+                                <a
+                                    class="u-button u-button-primary"
+                                    @click="makeDefaultProtocolHandler()"
+                                >
+                                    <i>{{ $t('settings_default_handler') }}</i>
+                                </a>
+                            </div>
                         </div>
                     </div>
 
@@ -91,6 +113,10 @@
                             <label class="u-checkbox-wrapper">
                                 <span>{{ $t('settings_nick_colouring') }} </span>
                                 <input v-model="settingBufferColourNicknames" type="checkbox" >
+                            </label>
+                            <label class="u-checkbox-wrapper">
+                                <span>{{ $t('settings_share_typing') }} </span>
+                                <input v-model="settingBufferShareTyping" type="checkbox">
                             </label>
                         </div>
                     </div>
@@ -184,6 +210,7 @@ import _ from 'lodash';
 import state from '@/libs/state';
 import ThemeManager from '@/libs/ThemeManager';
 import GlobalApi from '@/libs/GlobalApi';
+import localesList from '@/res/localesList';
 import SettingsAliases from './SettingsAliases';
 import SettingsAdvanced from './SettingsAdvanced';
 
@@ -213,6 +240,7 @@ export default {
             theme: '',
             customThemeUrl: '',
             pluginUiElements: GlobalApi.singleton().appSettingsPlugins,
+            localesList,
         };
     },
     computed: {
@@ -220,6 +248,9 @@ export default {
             let themeMgr = ThemeManager.instance();
             let val = themeMgr.themeVar('supports-monospace');
             return val === '1';
+        },
+        canRegisterProtocolHandler: function canRegisterProtocolHandler() {
+            return !!navigator.registerProtocolHandler && state.setting('allowRegisterProtocolHandler');
         },
         timestamps_24h: {
             get: function get24Timestamps() {
@@ -247,6 +278,7 @@ export default {
         settingBufferExtraFormatting: bindSetting('buffers.extra_formatting'),
         settingBufferTrafficAsActivity: bindSetting('buffers.traffic_as_activity'),
         settingBufferMuteSound: bindSetting('buffers.mute_sound'),
+        settingBufferShareTyping: bindSetting('buffers.share_typing'),
         settingDefaultBanMask: bindSetting('buffers.default_ban_mask'),
         settingDefaultKickReason: bindSetting('buffers.default_kick_reason'),
         settingAdvancedEnable: {
@@ -255,6 +287,14 @@ export default {
             },
             set: function setSettingShowAdvancedTab(newVal) {
                 state.ui.show_advanced_tab = newVal;
+            },
+        },
+        settingLanguage: {
+            get: function getSettingLanguage() {
+                return state.setting('language') || '';
+            },
+            set: function setSettingLanguage(newVal) {
+                state.setting('language', newVal || null);
             },
         },
         messageLayouts() {
@@ -338,6 +378,10 @@ export default {
                 this.$el.scrollTop = 0;
             });
         },
+        makeDefaultProtocolHandler() {
+            navigator.registerProtocolHandler('irc', document.location.origin + document.location.pathname + '#%s', 'Kiwi IRC');
+            navigator.registerProtocolHandler('ircs', document.location.origin + document.location.pathname + '#%s', 'Kiwi IRC');
+        },
     },
 };
 </script>
@@ -354,6 +398,22 @@ export default {
         width: 100%;
         overflow: hidden;
     }
+}
+
+.u-form label.kiwi-appsettings-setting-language.kiwi-appsettings-setting-language {
+    display: flex;
+    margin-bottom: 2em;
+}
+
+.kiwi-appsettings-setting-language select {
+    flex-grow: 0;
+    max-width: 200px;
+}
+
+.kiwi-appsettings-setting-language div {
+    flex-grow: 1;
+    text-align: right;
+    margin-right: 1em;
 }
 
 .kiwi-appsettings-setting-theme span {

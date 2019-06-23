@@ -21,7 +21,6 @@ export default class InputHandler {
             this.aliasRewriter.importFromString(state.setting('aliases'));
         });
 
-        this.addInputCommands();
         this.listenForInput();
     }
 
@@ -55,7 +54,7 @@ export default class InputHandler {
         this.validateContext(context);
         const { network, buffer } = context;
         let line = rawLine;
-        let stylesStrippedLine = line.replace(/(\x03[0-9]{0,2})?([\x02\x1d\x1f]+)?/g, '');
+        let stylesStrippedLine = Misc.stripStyles(line);
 
         // If no command specified, server buffers = send raw, channels/queries = send message
         let escapedCommand = stylesStrippedLine.substr(0, 2) === '//';
@@ -106,18 +105,19 @@ export default class InputHandler {
             params: params,
         };
 
-        // Include command and params as their own arguments just for ease of use
+        // Plugins may tap into this event to handle a command themselves
         this.state.$emit('input.command.' + command, eventObj, command, params);
+        if (eventObj.handled) {
+            return;
+        }
+
+        if (inputCommands[command.toLowerCase()]) {
+            inputCommands[command.toLowerCase()].call(this, eventObj, command, params);
+        }
 
         if (!eventObj.handled) {
             network.ircClient.raw(line);
         }
-    }
-
-    addInputCommands() {
-        _.each(inputCommands, (fn, event) => {
-            this.state.$on('input.command.' + event, fn.bind(this));
-        });
     }
 }
 
@@ -145,6 +145,12 @@ function handleMessage(type, event, command, line) {
 
     let bufferName = line.substr(0, spaceIdx);
     let message = line.substr(spaceIdx + 1);
+
+    // Mke sure we have some text to actually send
+    if (!message) {
+        return;
+    }
+
     let buffer = bufferName.length && this.state.getOrAddBufferByName(network.id, bufferName);
     if (buffer) {
         let textFormatType = 'privmsg';

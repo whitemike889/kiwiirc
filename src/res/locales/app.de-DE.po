@@ -1,6 +1,5 @@
 msgid ""
 msgstr ""
-"Start\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: crowdin.com\n"
 "X-Crowdin-Project: kiwiirc\n"
@@ -8,10 +7,10 @@ msgstr ""
 "X-Crowdin-File: /master/src/res/locales/app.dev.po\n"
 "Project-Id-Version: kiwiirc\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Last-Translator: kiwiirc <darren@kiwiirc.com>\n"
+"Last-Translator: Darren Whitlen (kiwiirc)\n"
 "Language-Team: German\n"
 "Language: de_DE\n"
-"PO-Revision-Date: 2019-03-10 14:10\n"
+"PO-Revision-Date: 2019-05-19 11:02\n"
 
 #: Start
 msgid "start_button"
@@ -205,6 +204,10 @@ msgstr "{{count}} Sekunden"
 msgid "settings_general"
 msgstr "Allgemein"
 
+#: Language
+msgid "settings_language"
+msgstr ""
+
 #: Theme
 msgid "settings_theme"
 msgstr "Theme"
@@ -264,6 +267,10 @@ msgstr "Extra Formatierung"
 #: Colour nicknames in messages
 msgid "settings_nick_colouring"
 msgstr "Nicknamen einfärben"
+
+#: Share when I'm typing a message
+msgid "settings_share_typing"
+msgstr ""
 
 #: Include join/part messages as activity
 msgid "settings_show_joinpart"
@@ -488,6 +495,10 @@ msgstr "Kodierung"
 #: Show Raw
 msgid "settings_show_raw"
 msgstr "Zeige Raw"
+
+#: Direct websocket
+msgid "settings_use_websocket"
+msgstr ""
 
 #: Run commands when connected
 msgid "settings_autorun"
@@ -955,7 +966,7 @@ msgstr "Der Nickname {{nick}}} wird bereits verwendet. Versuche {{newnick}}}....
 
 #: {{nick}} is now known as {{newnick}}
 msgid "now_known_as"
-msgstr "{{nick}} ist jetzt als {{newnick}}} bekannt."
+msgstr "{{nick}} ist jetzt als {{newnick}} bekannt."
 
 #: {{nick}} changed the topic to: {{topic}}
 msgid "changed_topic_to"

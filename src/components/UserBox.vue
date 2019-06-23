@@ -6,7 +6,7 @@
         <div class="kiwi-userbox-header">
             <h3>
                 <away-status-indicator :network="network" :user="user"/> {{ user.nick }}
-                <span v-if="userMode" class="kiwi-userbox-modestring">+ {{ userMode }}</span>
+                <span v-if="userMode" class="kiwi-userbox-modestring">+{{ userMode }}</span>
             </h3>
             <div class="kiwi-userbox-usermask">{{ user.username }}@{{ user.host }}</div>
         </div>
@@ -262,7 +262,9 @@ export default {
         openQuery: function openQuery() {
             let buffer = this.$state.addBuffer(this.network.id, this.user.nick);
             this.$state.setActiveBuffer(this.network.id, buffer.name);
-            this.$state.$emit('userbox.hide');
+            if (this.$state.ui.is_narrow) {
+                this.$state.$emit('userbox.hide');
+            }
         },
         onChannelsClick(event) {
             let channelName = event.target.getAttribute('data-channel-name');

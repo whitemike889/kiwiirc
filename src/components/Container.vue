@@ -27,9 +27,15 @@
 
             <slot name="before"/>
 
+            <not-connected
+                v-if="buffer.getNetwork().state !== 'connected' && !buffer.isServer()"
+                :buffer="buffer"
+                :network="buffer.getNetwork()"
+            />
+
             <div class="kiwi-container-content">
                 <template v-if="buffer.isServer()">
-                    <server-view :network="network" :buffer="buffer" :sidebar-state="sidebarState"/>
+                    <server-view :network="network"/>
                 </template>
                 <template v-else>
                     <message-list :buffer="buffer"/>
@@ -61,6 +67,7 @@
 import state from '@/libs/state';
 import ContainerHeader from './ContainerHeader';
 import Sidebar from './Sidebar';
+import NotConnected from './NotConnected';
 import MessageList from './MessageList';
 import ServerView from './ServerView';
 
@@ -68,6 +75,7 @@ export default {
     components: {
         ContainerHeader,
         Sidebar,
+        NotConnected,
         MessageList,
         ServerView,
     },
@@ -174,7 +182,6 @@ export default {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    top: 4px;
 }
 
 /* When the sidebar is open we will put a shadow over the text area */
@@ -269,7 +276,7 @@ export default {
     line-height: 2em;
     box-sizing: border-box;
     top: 10px;
-    z-index: 4;
+    z-index: 3;
     white-space: nowrap;
     left: 14px;
     width: 37px;
@@ -332,6 +339,21 @@ export default {
     padding: 0 14px;
 }
 
+.kiwi-wrap .kiwi-container::after {
+    content: '';
+    position: absolute;
+    left: auto;
+    height: 120%;
+    background-color: rgba(0, 0, 0, 0.4);
+    top: 0;
+    opacity: 0;
+    z-index: 99;
+    width: 0%;
+    right: -100%;
+    transition: opacity 0.1s;
+    transition-delay: opacity 0.1s;
+}
+
 @media screen and (max-width: 1500px) {
     .kiwi-container--sidebar-open .kiwi-sidebar {
         max-width: 350px;
@@ -347,6 +369,13 @@ export default {
         display: block;
     }
 
+    .kiwi-wrap--statebrowser-drawopen .kiwi-container::after {
+        top: 0;
+        opacity: 1;
+        width: 100%;
+        right: 0%;
+    }
+
     .kiwi-header {
         margin-left: 50px;
         margin-right: 50px;
@@ -359,7 +388,7 @@ export default {
     }
 
     .kiwi-sidebar {
-        top: 0;
+        top: -4px;
     }
 }
 

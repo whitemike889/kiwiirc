@@ -6,6 +6,7 @@ import _ from 'lodash';
 import strftime from 'strftime';
 import { urlRegex } from './TextFormatting';
 
+const strftimeUTC = strftime.timezone('+0');
 /**
  * Extract an array of buffers from a string, parsing multiple buffer names and channel keys
  * "#chan,#chan2" => 2 channels without a key
@@ -45,6 +46,10 @@ export function splitHost(uri) {
 
 }
 
+export function stripStyles(str) {
+    return str.replace(/(\x03[0-9]{0,2})?([\x02\x16\x1d\x1f]+)?/g, '');
+}
+
 /**
  * Does a string mention a nickname?
  * @param {string} input The string to search within
@@ -56,8 +61,9 @@ export function mentionsNick(input, nick) {
     }
     let punc = '\\s,.!:;+()\\[\\]?¿\\/<>@-';
     let escapedNick = _.escapeRegExp(nick);
+    let stylesStrippedInput = stripStyles(input);
     let r = new RegExp(`(^|[${punc}])${escapedNick}([${punc}]|$)`, 'i');
-    return r.test(input);
+    return r.test(stylesStrippedInput);
 }
 
 /**
@@ -199,5 +205,5 @@ export function replaceObjectProps(target, source) {
  */
 export function dateIso(date) {
     let d = date || new Date();
-    return strftime('%FT%T.%L%:z', d);
+    return strftimeUTC('%Y-%m-%dT%H:%M:%S.%LZ', d);
 }

@@ -45,7 +45,12 @@
         </div>
         <div
             :style="{ 'color': userColour }"
-            class="kiwi-messagelist-nick"
+            :class="[
+                'kiwi-messagelist-nick',
+                (message.user && userMode(message.user)) ?
+                    'kiwi-messagelist-nick--mode-'+userMode(message.user) :
+                    ''
+            ]"
             @click="ml.openUserBox(message.nick)"
             @mouseover="ml.hover_nick=message.nick.toLowerCase();"
             @mouseout="ml.hover_nick='';"
@@ -55,7 +60,9 @@
                 :network="getNetwork()" :user="message.user"
                 :toggle="false"
             />
-            {{ message.user ? userModePrefix(message.user) : '' }}
+            <span class="kiwi-messagelist-nick--prefix">
+                {{ message.user ? userModePrefix(message.user) : '' }}
+            </span>
             {{ message.nick }}
         </div>
         <div
@@ -106,6 +113,9 @@ export default {
         isHoveringOverMessage(message) {
             return message.nick && message.nick.toLowerCase() === this.hover_nick.toLowerCase();
         },
+        userMode(user) {
+            return this.ml.buffer.userMode(user);
+        },
         userModePrefix(user) {
             return this.ml.buffer.userModePrefix(user);
         },
@@ -136,6 +146,7 @@ export default {
     left: 8px;
     top: -1px;
     position: absolute;
+    white-space: nowrap;
 }
 
 .kiwi-messagelist-message--compact .kiwi-messagelist-nick:hover {
@@ -178,12 +189,6 @@ export default {
     margin-left: 131px;
 }
 
-//Channel Connection's
-.kiwi-messagelist-message--compact.kiwi-messagelist-message-connection {
-    text-align: center;
-}
-
-.kiwi-messagelist-message--compact.kiwi-messagelist-message-connection .kiwi-messagelist-nick,
 .kiwi-messagelist-message--compact.kiwi-messagelist-message-connection .kiwi-messagelist-time {
     display: none;
 }
@@ -192,6 +197,10 @@ export default {
     display: inline-block;
     margin: 0;
     padding: 10px 0;
+    margin-left: 131px;
+    font-size: 0.8em;
+    opacity: 0.8;
+    font-weight: 600;
 }
 
 //Channel topic

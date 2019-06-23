@@ -29,14 +29,17 @@
                     <input v-model="show_password_box" type="checkbox" >
                     <span> {{ $t('password_have') }} </span>
                 </label>
+
                 <input-text
                     v-focus
                     v-if="showPass && (show_password_box || !toggablePass)"
                     :label="$t('password')"
+                    :show-plain-text="true"
                     v-model="password"
-                    class="kiwi-welcome-simple-password u-input-text--reveal-value"
                     type="password"
+                    class="kiwi-welcome-simple-password u-input-text--reveal-value"
                 />
+
                 <input-text
                     v-if="showChannel"
                     :label="$t('channel')"
@@ -71,6 +74,7 @@ import _ from 'lodash';
 import * as Misc from '@/helpers/Misc';
 import state from '@/libs/state';
 import Logger from '@/libs/Logger';
+import BouncerProvider from '@/libs/BouncerProvider';
 import StartupLayout from './CommonLayout';
 
 let log = Logger.namespace('Welcome.vue');
@@ -115,6 +119,11 @@ export default {
                 ready = false;
             }
 
+            // If toggling the password is is disabled, assume it is required
+            if (!this.toggablePass && !this.password) {
+                ready = false;
+            }
+
             let nickPatternStr = this.$state.setting('startupOptions.nick_format');
             let nickPattern = '';
             if (!nickPatternStr) {
@@ -156,7 +165,21 @@ export default {
     created: function created() {
         let options = state.settings.startupOptions;
 
-        this.nick = this.processNickRandomNumber(Misc.queryStringVal('nick') || options.nick || '');
+        // Take some settings from a previous network if available
+        let previousNet = null;
+        if (options.server.trim()) {
+            previousNet = state.getNetworkFromAddress(options.server.trim());
+        }
+
+        if (Misc.queryStringVal('nick')) {
+            this.nick = Misc.queryStringVal('nick');
+        } else if (previousNet && previousNet.nick) {
+            this.nick = previousNet.nick;
+        } else {
+            this.nick = options.nick;
+        }
+
+        this.nick = this.processNickRandomNumber(this.nick || '');
         this.password = options.password || '';
         this.channel = decodeURIComponent(window.location.hash) || options.channel || '';
         this.showChannel = typeof options.showChannel === 'boolean' ?
@@ -173,6 +196,16 @@ export default {
             true;
 
         this.connectWithoutChannel = !!options.allowNoChannel;
+
+        if (options.bouncer) {
+            this.toggablePass = false;
+            this.showPass = true;
+            this.showChannel = false;
+            this.connectWithoutChannel = true;
+
+            let bouncer = new BouncerProvider(this.$state);
+            bouncer.enable(options.server, options.port, options.tls, options.direct, options.path);
+        }
 
         if (options.autoConnect && this.nick && (this.channel || this.connectWithoutChannel)) {
             this.startUp();
@@ -229,12 +262,17 @@ export default {
             // Check if we have this network already
             let net = this.network || state.getNetworkFromAddress(netAddress);
 
+            let password = this.password;
+            if (options.bouncer) {
+                password = `${this.nick}:${this.password}`;
+            }
+
             // If the network doesn't already exist, add a new one
             net = net || state.addNetwork('Network', this.nick, {
                 server: netAddress,
                 port: options.port,
                 tls: options.tls,
-                password: this.password,
+                password: password,
                 encoding: _.trim(options.encoding),
                 direct: !!options.direct,
                 path: options.direct_path || '',
@@ -243,8 +281,8 @@ export default {
 
             // If we retreived an existing network, update the nick+password with what
             // the user has just put in place
-            net.nick = this.nick;
-            net.password = this.password;
+            net.connection.nick = this.nick;
+            net.password = password;
 
             if (!this.network && options.recaptchaSiteId) {
                 net.captchaResponse = this.captchaResponse();
@@ -418,6 +456,7 @@ export default {
     margin-top: -0.5em;
     left: 50%;
     margin-left: -40px;
+    color: black;
 }
 
 /** Smaller screen... **/
@@ -448,7 +487,6 @@ export default {
         left: 48%;
         top: 50%;
         margin-top: -50px;
-        color: #fff;
     }
 }
 

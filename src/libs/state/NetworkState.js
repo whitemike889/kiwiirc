@@ -17,6 +17,7 @@ export default class NetworkState {
         this.last_error = '';
         this.auto_commands = '';
         this.is_znc = false;
+        this.hidden = false;
         this.channel_list = [];
         this.channel_list_state = '';
         this.connection = {
@@ -28,6 +29,7 @@ export default class NetworkState {
             direct: false,
             encoding: 'utf8',
             bncname: '',
+            nick: '',
         };
         this.settings = {};
         this.nick = '';
