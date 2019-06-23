@@ -1,13 +1,13 @@
 <!DOCTYPE html><html><head><meta charset=utf-8><meta name=viewport content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1"><link rel=icon type=image/png href=static/favicon.png><title>Kiwi IRC</title><style>/* target specific styles */
     body {
-    	/* disable the 'pull down to refresh' on mobiles */
-    	overflow: hidden;
+        /* disable the 'pull down to refresh' on mobiles */
+        overflow: hidden;
     }</style><style class=embedly-css>.card .hdr {
             display:none;
-        }</style><link href=static/css/app.b3db22090f8001effec898faf30f88f0.css rel=stylesheet></head><body><div id=app></div>
-    
-    
-
+        }</style>
+</head>
+<body>
+    <div id=app></div>
 <script>
 console.log('Start');
 window.kiwiConfig = function() {
@@ -65,14 +65,11 @@ window.kiwiConfig = function() {
             }
         }
         conf.startupOptions.channel = fragment;
-	window.location.hash = fragment;
+    window.location.hash = fragment;
     }
  
     return conf;
 };
 </script>
-
-    
-    <script type=text/javascript src=static/js/manifest.6e89d8dd9902eba23003.js></script><script type=text/javascript src=static/js/vendor.328d3f3669c7d835f5f5.js></script><script type=text/javascript src=static/js/app.e8000b96a2645b83977c.js></script>
 </body>
 </html>
