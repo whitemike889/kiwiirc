@@ -1,0 +1,38 @@
+<div class="fn-sponsor" style="display:none;"><span>Protect your internet with a VPN<br></span>Sponsored by <a href="https://www.privateinternetaccess.com/pages/buy-vpn/freend/">PrivateInternetAccess</a></div>
+
+<style>
+.fn-sponsor {
+    width: 100%;
+    padding: 10px 0;
+    font-size: 0.9em;
+    color: #333333;
+    text-align: center;
+    margin-top: 1em;
+}
+
+.fn-sponsor a {
+    color: #333333;
+}
+</style>
+
+<script>
+kiwi.plugin('freenode', function(kiwi, log) {
+    kiwi.once('ready', function(event) {
+        addText();
+    });
+
+    function addText() {
+        var targetEl = document.querySelector('.kiwi-welcome-simple-form');
+        if (!targetEl) {
+            setTimeout(addText, 1);
+            return;
+        }
+        var sourceEl = document.querySelector('.fn-sponsor');
+        targetEl.appendChild(sourceEl);
+        sourceEl.style.display = 'block';
+    }
+});
+
+</script>
+
+

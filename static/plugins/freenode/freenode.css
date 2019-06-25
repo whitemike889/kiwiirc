@@ -1,0 +1,23 @@
+.fn-sponsor {
+    position: absolute;
+    z-index: 20;
+    bottom: 0px;
+    left: 0;
+    width: 100%;
+    padding: 10px 0;
+    font-size: 0.6em;
+    color: #333333;
+}
+
+.fn-sponsor a {
+    color: #333333;
+}
+
+@media screen and (max-width: 850px) {
+    .fn-sponsor, .fn-sponsor a {
+	bottom: -40px;
+    }
+    .fn-sponsor:hover {
+	background: #fff;
+    }
+}
