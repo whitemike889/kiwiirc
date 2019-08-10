@@ -14,10 +14,10 @@
 }
 
 @media screen and (max-width: 850px) {
-    .fn-sponsor, .fn-sponsor a {
-	bottom: -40px;
+    .kiwi-welcome-simple-form {
+	    height: 102%;
     }
     .fn-sponsor:hover {
-	background: #fff;
+	    background: #fff;
     }
 }
