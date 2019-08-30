@@ -10,7 +10,7 @@ msgstr ""
 "Last-Translator: Darren Whitlen (kiwiirc)\n"
 "Language-Team: Bulgarian\n"
 "Language: bg_BG\n"
-"PO-Revision-Date: 2019-06-27 16:01\n"
+"PO-Revision-Date: 2019-08-03 13:51\n"
 
 #: Start
 msgid "start_button"
@@ -48,9 +48,17 @@ msgstr "Kiwi Настройки"
 msgid "channels"
 msgstr "Канали"
 
+#: Access
+msgid "access"
+msgstr "Достъп"
+
 #: Banned Users
 msgid "banned"
 msgstr "Изгонени"
+
+#: Invited Users
+msgid "invited"
+msgstr "Поканени потребители"
 
 #: Notifications
 msgid "notifications"
@@ -159,6 +167,10 @@ msgstr "Добави в игнора"
 #: Channel
 msgid "connection_channel"
 msgstr "Автоматично влизане в канали"
+
+#: Away
+msgid "away"
+msgstr "Далеч"
 
 #: {{count}} week
 msgid "week"
@@ -387,6 +399,54 @@ msgstr "Опресняване на Бан листата"
 #: Nobody is banned!
 msgid "bans_nobody"
 msgstr "Все още няма баннати потребители"
+
+#: Refresh invite list
+msgid "invites_refresh"
+msgstr "Презареди листа с поканите"
+
+#: Invited user
+msgid "invites_user"
+msgstr "Поканени потребители"
+
+#: Invited by
+msgid "invites_by"
+msgstr "Поканен от"
+
+#: Refreshing invite list...
+msgid "invites_refreshing"
+msgstr "Обновяване на листа с покани"
+
+#: Nobody is invited!
+msgid "invites_nobody"
+msgstr "Никой не е поканен!"
+
+#: This is a public channel.
+msgid "invite_public_channel"
+msgstr "Това е публичен канал."
+
+#: Only invited users can join.
+msgid "invite_private_channel"
+msgstr "Само поканени потребители могат да влязат."
+
+#: Only allow invited users
+msgid "invite_set_private"
+msgstr "Разрешено само за поканени потребители"
+
+#: Allow anybody to join
+msgid "invite_set_public"
+msgstr "Позволи на всеки да влиза "
+
+#: Only registered users can join
+msgid "invite_registered_only"
+msgstr "Само регистрирани потребители могат да влизат"
+
+#: Add invite
+msgid "invite_add_invite"
+msgstr "Добави покана"
+
+#: (Any registered user)
+msgid "invite_any_registered"
+msgstr "(Всеки регистриран потребител)"
 
 #: Topic
 msgid "channel_topic"
@@ -688,6 +748,10 @@ msgstr "Намери повече канали"
 msgid "change_nick"
 msgstr "Промяна на ник"
 
+#: Enter new nickname...
+msgid "enter_new_nick"
+msgstr "Въведете нов прякор..."
+
 #: Account name: {{user}}
 msgid "user_account"
 msgstr "Потребителско име: {{user}}"
@@ -743,6 +807,18 @@ msgstr "Забрани и премахни от канала"
 #: Please specify a channel to join. eg /join #example
 msgid "error_no_channel_join"
 msgstr "Моля, посочете канал, към който да се присъедините. напр. / join #example"
+
+#: The nickname {{nick}} is already in use!
+msgid "error_nick_in_use"
+msgstr "Този прякор {{nick}} вече се ползва!"
+
+#: You must enter a new nickname
+msgid "error_empty_nick"
+msgstr "Трябва да въведете нов прякор"
+
+#: Nickname must not start with a number
+msgid "error_no_number"
+msgstr "Прякорът не трябва да почва с цифри"
 
 #: {{nick}} gives ops to {{target}}
 msgid "modes_give_ops"

@@ -36,6 +36,8 @@ export default class BufferState {
         this.active_timeout = null;
         this.message_count = 0;
         this.current_input = '';
+        this.input_history = [];
+        this.input_history_pos = 0;
         this.show_input = true;
 
         Vue.observable(this);
@@ -237,7 +239,8 @@ export default class BufferState {
 
         if (direction === 'backward') {
             let lastMessage = this.getMessages().reduce((earliest, current) => {
-                let validType = earliest.type !== 'traffic';
+                let ignoreTypes = ['traffic', 'topic', 'connection', 'presence'];
+                let validType = ignoreTypes.indexOf(earliest.type) === -1;
                 if (validType && earliest.time && earliest.time < current.time) {
                     return earliest;
                 }
@@ -250,7 +253,8 @@ export default class BufferState {
                 new Date();
         } else if (direction === 'forward') {
             let firstMessage = this.getMessages().reduce((latest, current) => {
-                let validType = latest.type !== 'traffic';
+                let ignoreTypes = ['traffic', 'topic', 'connection', 'presence'];
+                let validType = ignoreTypes.indexOf(latest.type) === -1;
                 if (validType && latest.time && latest.time > current.time) {
                     return latest;
                 }
@@ -390,6 +394,10 @@ export default class BufferState {
 
         let network = this.getNetwork();
         network.ircClient.part(this.name, reason || '');
+    }
+
+    scrollToMessage(id) {
+        this.state.$emit('messagelist.scrollto', { id: id });
     }
 }
 

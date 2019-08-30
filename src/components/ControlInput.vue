@@ -135,8 +135,6 @@ export default {
         return {
             self: this,
             selfuser_open: false,
-            history: [],
-            history_pos: 0,
             autocomplete_open: false,
             autocomplete_items: [],
             autocomplete_filter: '',
@@ -185,6 +183,27 @@ export default {
                 return true;
             }
             return false;
+        },
+        history() {
+            if (state.setting('buffers.shared_input')) {
+                return this.$state.ui.input_history;
+            }
+            return this.buffer.input_history;
+        },
+        history_pos: {
+            get() {
+                if (state.setting('buffers.shared_input')) {
+                    return this.$state.ui.input_history_pos;
+                }
+                return this.buffer.input_history_pos;
+            },
+            set(newVal) {
+                if (state.setting('buffers.shared_input')) {
+                    this.$state.ui.input_history_pos = newVal;
+                } else {
+                    this.buffer.input_history_pos = newVal;
+                }
+            },
         },
     },
     watch: {
@@ -559,7 +578,7 @@ export default {
                 let commandList = [];
                 autocompleteCommands.forEach((command) => {
                     // allow descriptions to be translation keys or static strings
-                    let desc = command.description.startsWith('locale_id_') ?
+                    let desc = command.description.indexOf('locale_id_') === 0 ?
                         TextFormatting.t(command.description.substr(10)) :
                         command.description;
                     commandList.push({
@@ -728,7 +747,7 @@ export default {
     height: 100%;
     box-sizing: border-box;
     overflow: visible;
-    padding-top: 8px;
+    padding: 7px 0 12px 0;
 }
 
 .kiwi-controlinput-tool {

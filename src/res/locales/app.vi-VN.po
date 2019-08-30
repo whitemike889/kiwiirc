@@ -10,7 +10,7 @@ msgstr ""
 "Last-Translator: Darren Whitlen (kiwiirc)\n"
 "Language-Team: Vietnamese\n"
 "Language: vi_VN\n"
-"PO-Revision-Date: 2019-06-27 14:12\n"
+"PO-Revision-Date: 2019-08-02 12:45\n"
 
 #: Start
 msgid "start_button"
@@ -48,8 +48,16 @@ msgstr ""
 msgid "channels"
 msgstr ""
 
+#: Access
+msgid "access"
+msgstr ""
+
 #: Banned Users
 msgid "banned"
+msgstr ""
+
+#: Invited Users
+msgid "invited"
 msgstr ""
 
 #: Notifications
@@ -158,6 +166,10 @@ msgstr ""
 
 #: Channel
 msgid "connection_channel"
+msgstr ""
+
+#: Away
+msgid "away"
 msgstr ""
 
 #: {{count}} week
@@ -386,6 +398,54 @@ msgstr ""
 
 #: Nobody is banned!
 msgid "bans_nobody"
+msgstr ""
+
+#: Refresh invite list
+msgid "invites_refresh"
+msgstr ""
+
+#: Invited user
+msgid "invites_user"
+msgstr ""
+
+#: Invited by
+msgid "invites_by"
+msgstr ""
+
+#: Refreshing invite list...
+msgid "invites_refreshing"
+msgstr ""
+
+#: Nobody is invited!
+msgid "invites_nobody"
+msgstr ""
+
+#: This is a public channel.
+msgid "invite_public_channel"
+msgstr ""
+
+#: Only invited users can join.
+msgid "invite_private_channel"
+msgstr ""
+
+#: Only allow invited users
+msgid "invite_set_private"
+msgstr ""
+
+#: Allow anybody to join
+msgid "invite_set_public"
+msgstr ""
+
+#: Only registered users can join
+msgid "invite_registered_only"
+msgstr ""
+
+#: Add invite
+msgid "invite_add_invite"
+msgstr ""
+
+#: (Any registered user)
+msgid "invite_any_registered"
 msgstr ""
 
 #: Topic
@@ -688,6 +748,10 @@ msgstr ""
 msgid "change_nick"
 msgstr ""
 
+#: Enter new nickname...
+msgid "enter_new_nick"
+msgstr ""
+
 #: Account name: {{user}}
 msgid "user_account"
 msgstr ""
@@ -742,6 +806,18 @@ msgstr ""
 
 #: Please specify a channel to join. eg /join #example
 msgid "error_no_channel_join"
+msgstr ""
+
+#: The nickname {{nick}} is already in use!
+msgid "error_nick_in_use"
+msgstr ""
+
+#: You must enter a new nickname
+msgid "error_empty_nick"
+msgstr ""
+
+#: Nickname must not start with a number
+msgid "error_no_number"
 msgstr ""
 
 #: {{nick}} gives ops to {{target}}

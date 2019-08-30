@@ -10,7 +10,7 @@ msgstr ""
 "Last-Translator: Darren Whitlen (kiwiirc)\n"
 "Language-Team: Catalan\n"
 "Language: ca_ES\n"
-"PO-Revision-Date: 2019-06-28 19:10\n"
+"PO-Revision-Date: 2019-08-02 14:31\n"
 
 #: Start
 msgid "start_button"
@@ -48,9 +48,17 @@ msgstr "Configuració del Kiwi"
 msgid "channels"
 msgstr "Canals"
 
+#: Access
+msgid "access"
+msgstr "Accés"
+
 #: Banned Users
 msgid "banned"
 msgstr "Usuaris banejats"
+
+#: Invited Users
+msgid "invited"
+msgstr "Usuaris convidats"
 
 #: Notifications
 msgid "notifications"
@@ -159,6 +167,10 @@ msgstr "Ignorar a un usuari"
 #: Channel
 msgid "connection_channel"
 msgstr "Canal"
+
+#: Away
+msgid "away"
+msgstr "Està absent"
 
 #: {{count}} week
 msgid "week"
@@ -387,6 +399,54 @@ msgstr "Actualitzant la llista de bans"
 #: Nobody is banned!
 msgid "bans_nobody"
 msgstr "Ningú està banejat"
+
+#: Refresh invite list
+msgid "invites_refresh"
+msgstr "Refrescar la llista de convidats"
+
+#: Invited user
+msgid "invites_user"
+msgstr "Usuari convidat"
+
+#: Invited by
+msgid "invites_by"
+msgstr "Convidat per"
+
+#: Refreshing invite list...
+msgid "invites_refreshing"
+msgstr "Refrescant la llista de convidats..."
+
+#: Nobody is invited!
+msgid "invites_nobody"
+msgstr "No hi ha ningú convidat!"
+
+#: This is a public channel.
+msgid "invite_public_channel"
+msgstr "Aquest és un canal públic."
+
+#: Only invited users can join.
+msgid "invite_private_channel"
+msgstr "Només els usuaris convidats poden entrar."
+
+#: Only allow invited users
+msgid "invite_set_private"
+msgstr "Permet entrar només als usuaris convidats"
+
+#: Allow anybody to join
+msgid "invite_set_public"
+msgstr "Permet entrar a qualsevol"
+
+#: Only registered users can join
+msgid "invite_registered_only"
+msgstr "Només els usuaris registrats poden entrar"
+
+#: Add invite
+msgid "invite_add_invite"
+msgstr "Convidar a un usuari"
+
+#: (Any registered user)
+msgid "invite_any_registered"
+msgstr "(Qualsevol usuari registrat)"
 
 #: Topic
 msgid "channel_topic"
@@ -688,6 +748,10 @@ msgstr "Buscar més sales"
 msgid "change_nick"
 msgstr "Canviar el nick"
 
+#: Enter new nickname...
+msgid "enter_new_nick"
+msgstr "Escriu el nou àlies..."
+
 #: Account name: {{user}}
 msgid "user_account"
 msgstr "Nom de la compta: {{user}}"
@@ -743,6 +807,18 @@ msgstr "Kick + Ban del canal"
 #: Please specify a channel to join. eg /join #example
 msgid "error_no_channel_join"
 msgstr "Si us plau, especifica la sala a entrar. Per ex. /join #exemple"
+
+#: The nickname {{nick}} is already in use!
+msgid "error_nick_in_use"
+msgstr "L'àlies {{nick}} està actualment en ús!"
+
+#: You must enter a new nickname
+msgid "error_empty_nick"
+msgstr "Has d'escriure un nou àlies"
+
+#: Nickname must not start with a number
+msgid "error_no_number"
+msgstr "L'àlies no pot començar amb un número"
 
 #: {{nick}} gives ops to {{target}}
 msgid "modes_give_ops"

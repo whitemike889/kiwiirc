@@ -34,8 +34,13 @@
             </h4>
             <div>
                 <ul v-if="highlights.length > 0">
-                    <li v-for="msg in highlights" :key="msg.id">
-                        {{ msg.nick ? msg.nick + ': ' : '' }}{{ msg.message }}
+                    <li
+                        v-for="msg in highlights"
+                        :key="msg.id"
+                        class="kiwi-aboutbuffer-highlight"
+                        @click="buffer.scrollToMessage(msg.id)"
+                    >
+                        {{ msg.nick ? msg.nick + ': ' : '' }}<span v-html="msg.html" />
                     </li>
                 </ul>
                 <p v-else>{{ $t('nobody_mentioned_you') }}</p>
@@ -61,8 +66,8 @@
 'kiwi public';
 
 import GlobalApi from '@/libs/GlobalApi';
-import formatIrcMessage from '@/libs/MessageFormatter';
-import * as TextFormatting from '@/helpers/TextFormatting';
+import toHtml from '@/libs/renderers/Html';
+import parseMessage from '@/libs/MessageParser';
 
 export default {
     props: ['network', 'buffer', 'sidebarState'],
@@ -78,10 +83,9 @@ export default {
         },
 
         formattedTopic() {
-            let showEmoticons = this.$state.setting('buffers.show_emoticons');
-            let blocks = formatIrcMessage(this.b.topic || '', { extras: false });
-            let content = TextFormatting.styleBlocksToHtml(blocks, showEmoticons, null);
-            return content.html;
+            let blocks = parseMessage(this.b.topic || '', { extras: false });
+            let content = toHtml(blocks);
+            return content;
         },
 
         highlights() {
@@ -93,7 +97,8 @@ export default {
                 .filter(m => m.isHighlight)
                 .filter(m => m.type !== 'traffic')
                 .filter(m => m.type !== 'topic')
-                .filter(m => m.type !== 'mode');
+                .filter(m => m.type !== 'mode')
+                .filter(m => m.html);
         },
     },
     methods: {
@@ -124,6 +129,10 @@ export default {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+}
+
+.kiwi-aboutbuffer-highlight {
+    cursor: pointer;
 }
 
 .kiwi-aboutbuffer h3 {

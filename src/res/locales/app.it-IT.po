@@ -10,7 +10,7 @@ msgstr ""
 "Last-Translator: Darren Whitlen (kiwiirc)\n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
-"PO-Revision-Date: 2019-06-27 15:43\n"
+"PO-Revision-Date: 2019-08-02 14:15\n"
 
 #: Start
 msgid "start_button"
@@ -48,9 +48,17 @@ msgstr "Impostazioni KiwiIRC"
 msgid "channels"
 msgstr "Canali"
 
+#: Access
+msgid "access"
+msgstr "Accesso"
+
 #: Banned Users
 msgid "banned"
 msgstr "Utenti bloccati"
+
+#: Invited Users
+msgid "invited"
+msgstr "Utenti invitati"
 
 #: Notifications
 msgid "notifications"
@@ -159,6 +167,10 @@ msgstr "Ignora utente"
 #: Channel
 msgid "connection_channel"
 msgstr "Canale"
+
+#: Away
+msgid "away"
+msgstr "Assente"
 
 #: {{count}} week
 msgid "week"
@@ -387,6 +399,54 @@ msgstr "Aggiornamento elenco utenti bloccati in corso..."
 #: Nobody is banned!
 msgid "bans_nobody"
 msgstr "Nessuno è bloccato!"
+
+#: Refresh invite list
+msgid "invites_refresh"
+msgstr "Aggiorna elenco inviti"
+
+#: Invited user
+msgid "invites_user"
+msgstr "Utente invitato"
+
+#: Invited by
+msgid "invites_by"
+msgstr "Invitato da"
+
+#: Refreshing invite list...
+msgid "invites_refreshing"
+msgstr "Aggiornamento elenco inviti…"
+
+#: Nobody is invited!
+msgid "invites_nobody"
+msgstr "Nessuno è stato invitato!"
+
+#: This is a public channel.
+msgid "invite_public_channel"
+msgstr "Questo è un canale pubblico."
+
+#: Only invited users can join.
+msgid "invite_private_channel"
+msgstr "Solo gli utenti invitati possono accedere."
+
+#: Only allow invited users
+msgid "invite_set_private"
+msgstr "Permetti accesso solo agli utenti invitati"
+
+#: Allow anybody to join
+msgid "invite_set_public"
+msgstr "Permessi l'accesso a chiunque"
+
+#: Only registered users can join
+msgid "invite_registered_only"
+msgstr "Solo gli utenti registrati possono accedere"
+
+#: Add invite
+msgid "invite_add_invite"
+msgstr "Aggiungi invito"
+
+#: (Any registered user)
+msgid "invite_any_registered"
+msgstr "(qualsiasi utente registrato)"
 
 #: Topic
 msgid "channel_topic"
@@ -688,6 +748,10 @@ msgstr "Trova altri Canali"
 msgid "change_nick"
 msgstr "Cambia nickname"
 
+#: Enter new nickname...
+msgid "enter_new_nick"
+msgstr "Inserire il nuovo nickname..."
+
 #: Account name: {{user}}
 msgid "user_account"
 msgstr "Nome account: {{user}}"
@@ -743,6 +807,18 @@ msgstr "Bandisci ed espelli dal canale"
 #: Please specify a channel to join. eg /join #example
 msgid "error_no_channel_join"
 msgstr "Specifica un canale a cui accedere. es /join #esempio"
+
+#: The nickname {{nick}} is already in use!
+msgid "error_nick_in_use"
+msgstr "Il nickname {{nick}} è già in uso!"
+
+#: You must enter a new nickname
+msgid "error_empty_nick"
+msgstr "È necessario inserire un nuovo nickname"
+
+#: Nickname must not start with a number
+msgid "error_no_number"
+msgstr "Il nickname non può iniziare con un numero"
 
 #: {{nick}} gives ops to {{target}}
 msgid "modes_give_ops"

@@ -249,6 +249,12 @@ export default {
         this.listen(this.$state, 'mediaviewer.opened', () => {
             this.$nextTick(this.maybeScrollToBottom.apply(this));
         });
+
+        this.listen(this.$state, 'messagelist.scrollto', (opt) => {
+            if (opt && opt.id) {
+                this.maybeScrollToId(opt.id);
+            }
+        });
     },
     methods: {
         isHoveringOverMessage(message) {
@@ -372,6 +378,7 @@ export default {
                 let network = this.buffer.getNetwork();
                 this.$state.addBuffer(this.buffer.networkid, channelName);
                 network.ircClient.join(channelName);
+                this.$state.setActiveBuffer(this.buffer.networkid, channelName);
                 return;
             }
 
@@ -419,6 +426,13 @@ export default {
         maybeScrollToBottom() {
             if (this.auto_scroll) {
                 this.$el.scrollTop = this.$el.scrollHeight;
+            }
+        },
+        maybeScrollToId(id) {
+            let messageElement = this.$el.querySelector('.kiwi-messagelist-message[data-message-id="' + id + '"]');
+            if (messageElement && messageElement.offsetTop) {
+                this.$el.scrollTop = messageElement.offsetTop;
+                this.auto_scroll = false;
             }
         },
     },

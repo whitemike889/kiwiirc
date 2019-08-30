@@ -10,7 +10,7 @@ msgstr ""
 "Last-Translator: Darren Whitlen (kiwiirc)\n"
 "Language-Team: Dutch\n"
 "Language: nl_NL\n"
-"PO-Revision-Date: 2019-06-28 13:56\n"
+"PO-Revision-Date: 2019-08-06 15:11\n"
 
 #: Start
 msgid "start_button"
@@ -48,9 +48,17 @@ msgstr "Kiwi-instellingen"
 msgid "channels"
 msgstr "Kanalen"
 
+#: Access
+msgid "access"
+msgstr "Toegang"
+
 #: Banned Users
 msgid "banned"
 msgstr "Verbannen gebruikers"
+
+#: Invited Users
+msgid "invited"
+msgstr "Uitgenodigde gebruikers"
 
 #: Notifications
 msgid "notifications"
@@ -159,6 +167,10 @@ msgstr "Gebruiker negeren"
 #: Channel
 msgid "connection_channel"
 msgstr "Kanaal"
+
+#: Away
+msgid "away"
+msgstr "Afwezig"
 
 #: {{count}} week
 msgid "week"
@@ -387,6 +399,54 @@ msgstr "Banlijst vernieuwen..."
 #: Nobody is banned!
 msgid "bans_nobody"
 msgstr "Er is niemand verbannen!"
+
+#: Refresh invite list
+msgid "invites_refresh"
+msgstr "Uitnodigingslijst vernieuwen"
+
+#: Invited user
+msgid "invites_user"
+msgstr "Uitgenodigde gebruiker"
+
+#: Invited by
+msgid "invites_by"
+msgstr "Uitgenodigd door"
+
+#: Refreshing invite list...
+msgid "invites_refreshing"
+msgstr "Uitnodigingslijst vernieuwen..."
+
+#: Nobody is invited!
+msgid "invites_nobody"
+msgstr "Er is niemand uitgenodigd!"
+
+#: This is a public channel.
+msgid "invite_public_channel"
+msgstr "Dit is een openbaar kanaal."
+
+#: Only invited users can join.
+msgid "invite_private_channel"
+msgstr "Alleen uitgenodigde gebruikers kunnen toetreden."
+
+#: Only allow invited users
+msgid "invite_set_private"
+msgstr "Alleen uitgenodigde gebruikers toestaan"
+
+#: Allow anybody to join
+msgid "invite_set_public"
+msgstr "Iedereen mag toetreden"
+
+#: Only registered users can join
+msgid "invite_registered_only"
+msgstr "Alleen geregistreerde gebruikers kunnen toetreden"
+
+#: Add invite
+msgid "invite_add_invite"
+msgstr "Uitnodiging toevoegen"
+
+#: (Any registered user)
+msgid "invite_any_registered"
+msgstr "(Geregistreerde gebruikers)"
 
 #: Topic
 msgid "channel_topic"
@@ -688,6 +748,10 @@ msgstr "Meer kanalen zoeken"
 msgid "change_nick"
 msgstr "Bijnaam wijzigen"
 
+#: Enter new nickname...
+msgid "enter_new_nick"
+msgstr "Voer nieuwe bijnaam in..."
+
 #: Account name: {{user}}
 msgid "user_account"
 msgstr "Accountnaam: {{user}}"
@@ -743,6 +807,18 @@ msgstr "Uit het kanaal zetten en verbannen"
 #: Please specify a channel to join. eg /join #example
 msgid "error_no_channel_join"
 msgstr "Geef een kanaal op om bij te wonen, bv. /join #voorbeeld"
+
+#: The nickname {{nick}} is already in use!
+msgid "error_nick_in_use"
+msgstr "De bijnaam {{nick}} is al in gebruik!"
+
+#: You must enter a new nickname
+msgid "error_empty_nick"
+msgstr "Je moet een nieuwe bijnaam invoeren"
+
+#: Nickname must not start with a number
+msgid "error_no_number"
+msgstr "Bijnaam mag niet met een cijfer beginnen"
 
 #: {{nick}} gives ops to {{target}}
 msgid "modes_give_ops"

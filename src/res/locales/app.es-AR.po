@@ -10,7 +10,7 @@ msgstr ""
 "Last-Translator: Darren Whitlen (kiwiirc)\n"
 "Language-Team: Spanish, Argentina\n"
 "Language: es_AR\n"
-"PO-Revision-Date: 2019-06-27 14:11\n"
+"PO-Revision-Date: 2019-08-02 12:44\n"
 
 #: Start
 msgid "start_button"
@@ -48,9 +48,17 @@ msgstr "Configuración del Kiwi"
 msgid "channels"
 msgstr "Salas"
 
+#: Access
+msgid "access"
+msgstr "Acceso"
+
 #: Banned Users
 msgid "banned"
 msgstr "Usuarios baneados"
+
+#: Invited Users
+msgid "invited"
+msgstr "Usuarios invitados"
 
 #: Notifications
 msgid "notifications"
@@ -160,6 +168,10 @@ msgstr "Ignorar usuario"
 msgid "connection_channel"
 msgstr "Sala"
 
+#: Away
+msgid "away"
+msgstr ""
+
 #: {{count}} week
 msgid "week"
 msgstr "semana"
@@ -230,7 +242,7 @@ msgstr "Usar fuente Monospace"
 
 #: Use Kiwi as my default IRC client
 msgid "settings_default_handler"
-msgstr ""
+msgstr "Usar Kiwi como mi cliente IRC predeterminado"
 
 #: Traditional IRC layout
 msgid "settings_layout_compact"
@@ -302,7 +314,7 @@ msgstr "Enviar mensaje"
 
 #: Enter Channel Key
 msgid "bufferkey_input"
-msgstr "Escribe la clave del canal:"
+msgstr "Escribe la clave de la sala:"
 
 #: Rejoin {{channel}}
 msgid "bufferkey_rejoin"
@@ -387,6 +399,54 @@ msgstr "Actualizando lista de baneos"
 #: Nobody is banned!
 msgid "bans_nobody"
 msgstr "Nadie está baneado"
+
+#: Refresh invite list
+msgid "invites_refresh"
+msgstr "Actualizar lista de invitados"
+
+#: Invited user
+msgid "invites_user"
+msgstr "Usuario invitado"
+
+#: Invited by
+msgid "invites_by"
+msgstr "Invitado por"
+
+#: Refreshing invite list...
+msgid "invites_refreshing"
+msgstr "Actualizando la lista de invitados..."
+
+#: Nobody is invited!
+msgid "invites_nobody"
+msgstr "¡Nadie fue invitado!"
+
+#: This is a public channel.
+msgid "invite_public_channel"
+msgstr "Esto es una sala pública."
+
+#: Only invited users can join.
+msgid "invite_private_channel"
+msgstr "Sólo los usuarios invitados pueden entrar."
+
+#: Only allow invited users
+msgid "invite_set_private"
+msgstr "Sólo se permite usuarios invitados"
+
+#: Allow anybody to join
+msgid "invite_set_public"
+msgstr "Se permite que cualquiera pueda entrar"
+
+#: Only registered users can join
+msgid "invite_registered_only"
+msgstr "Sólo los usuarios registrados pueden entrar"
+
+#: Add invite
+msgid "invite_add_invite"
+msgstr "Añadir invitación"
+
+#: (Any registered user)
+msgid "invite_any_registered"
+msgstr "(Cualquier usuario registrado)"
 
 #: Topic
 msgid "channel_topic"
@@ -598,7 +658,7 @@ msgstr "No hay buffer configurado"
 
 #: There is no topic for this channel
 msgid "no_topic_set"
-msgstr "No hay ningún tópico para este canal"
+msgstr "No hay ningún tópico para esta sala"
 
 #: About
 msgid "about"
@@ -688,6 +748,10 @@ msgstr "Buscar más Salas"
 msgid "change_nick"
 msgstr "Cambiar apodo"
 
+#: Enter new nickname...
+msgid "enter_new_nick"
+msgstr ""
+
 #: Account name: {{user}}
 msgid "user_account"
 msgstr "Nombre de la cuenta: {{user}}"
@@ -743,6 +807,18 @@ msgstr "Kick + Ban del canal"
 #: Please specify a channel to join. eg /join #example
 msgid "error_no_channel_join"
 msgstr "Por favor especifica la sala a entrar. Por ej. /join #ejemplo"
+
+#: The nickname {{nick}} is already in use!
+msgid "error_nick_in_use"
+msgstr ""
+
+#: You must enter a new nickname
+msgid "error_empty_nick"
+msgstr ""
+
+#: Nickname must not start with a number
+msgid "error_no_number"
+msgstr ""
 
 #: {{nick}} gives ops to {{target}}
 msgid "modes_give_ops"
@@ -914,19 +990,19 @@ msgstr "Añade una Red"
 
 #: You are trying to connect to {{network}}
 msgid "personal_connect_to"
-msgstr ""
+msgstr "Estás intentando conectarte a {{network}}"
 
 #: Network has been added to your existing Kiwi window.
 msgid "personal_added_to_existing"
-msgstr ""
+msgstr "La red se ha agregado a tu ventana existente de Kiwi."
 
 #: Add network to existing Kiwi window
 msgid "personal_add_existing_tab"
-msgstr ""
+msgstr "Agregar red a la ventana existente de Kiwi"
 
 #: Temporarily connect to this network
 msgid "personal_connect_temporary"
-msgstr ""
+msgstr "Conectarse temporalmente a esta red"
 
 #: Saved networks
 msgid "personal_saved"

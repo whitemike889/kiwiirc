@@ -25,6 +25,9 @@ module.exports = {
   entry: {
     app: [
         'core-js/fn/promise', // required by the webpack runtime for async import(). babel polyfills don't help us here. ie11
+        'core-js/fn/array/virtual/find-index', // required for vue-virtual-scroller & ie11
+        'core-js/fn/array/virtual/includes', // required for vue-virtual-scroller & ie11
+        'core-js/fn/typed/uint8-array', // required for runes parsing in irc-framework & ie11
         './src/main.js'
     ]
   },
@@ -67,6 +70,7 @@ module.exports = {
             resolve('src'),
             resolve('test'),
             resolve('node_modules/ip-regex'),
+            resolve('node_modules/isomorphic-textencoder'),
             resolve('node_modules/webpack-dev-server/client')
         ]
       },

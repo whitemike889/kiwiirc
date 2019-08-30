@@ -8,6 +8,9 @@ import NetworkState from './state/NetworkState';
 import BufferState from './state/BufferState';
 import UserState from './state/UserState';
 import Message from './Message';
+import Logger from './Logger';
+
+const log = Logger.namespace('state.js');
 
 const stateObj = {
     // May be set by a StatePersistence instance
@@ -33,6 +36,8 @@ const stateObj = {
         is_narrow: false,
         favicon_counter: 0,
         current_input: '',
+        input_history: [],
+        input_history_pos: 0,
         show_advanced_tab: false,
     },
     networks: [],
@@ -255,6 +260,7 @@ const state = new Vue({
 
         getNetworkFromBncName(bncname) {
             return _.find(this.networks, (net) => {
+                log.assert(!!net.connection.bncname, 'getNetworkFromBncName() comparing against falsey', net.name);
                 let isMatch = bncname.toLowerCase() === net.connection.bncname.toLowerCase();
                 return isMatch;
             });
@@ -658,7 +664,10 @@ const state = new Vue({
                 isActiveBuffer &&
                 !state.ui.app_has_focus &&
                 message.type !== 'traffic' &&
-                buffer.setting('flash_title')
+                (
+                    (buffer.setting('flash_title') === 'message') ||
+                    (buffer.setting('flash_title') === 'highlight' && isHighlight)
+                )
             ) {
                 this.$emit('notification.title', true);
             }

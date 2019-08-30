@@ -61,24 +61,17 @@
 .u-tabbed-view-tabs .u-tabbed-view-tab {
     border-bottom-color: #ffffff1a;
 }
-.u-form .u-input {
-    border-top: 0;
-    border-left: 0;
-    border-right: 0;
-}
 
 .u-form select {
     background-color: var(--brand-primary);
     color: #000000;
 }
 
-button.u-button.u-button-primary.u-submit.kiwi-welcome-znc-start,
-.kiwi-statebrowser-channel-label {
+button.u-button.u-button-primary.u-submit.kiwi-welcome-znc-start {
     color: var(--brand-default-fg);
 }
 
-.kiwi-welcome-znc h2,
-.kiwi-welcome-znc-form .u-input-text-label {
+.kiwi-welcome-znc h2 {
     color: var(--brand-default-bg);
 }
 
@@ -130,6 +123,7 @@ button.u-button.u-button-primary.u-submit.kiwi-welcome-znc-start,
 }
 
 .kiwi-messagelist-avatar {
+    background-color: var(--brand-default-bg);
     color: var(--brand-default-fg);
 }
 

@@ -10,7 +10,7 @@ msgstr ""
 "Last-Translator: Darren Whitlen (kiwiirc)\n"
 "Language-Team: Bosnian\n"
 "Language: bs_BA\n"
-"PO-Revision-Date: 2019-06-28 12:52\n"
+"PO-Revision-Date: 2019-08-08 16:22\n"
 
 #: Start
 msgid "start_button"
@@ -48,9 +48,17 @@ msgstr "Kiwi Podešavanja"
 msgid "channels"
 msgstr "Kanali"
 
+#: Access
+msgid "access"
+msgstr "Pristup"
+
 #: Banned Users
 msgid "banned"
 msgstr "Banovani korisnici"
+
+#: Invited Users
+msgid "invited"
+msgstr "Pozvani"
 
 #: Notifications
 msgid "notifications"
@@ -159,6 +167,10 @@ msgstr "Ignoriši korisnika"
 #: Channel
 msgid "connection_channel"
 msgstr "Kanal"
+
+#: Away
+msgid "away"
+msgstr "Odsutan"
 
 #: {{count}} week
 msgid "week"
@@ -387,6 +399,54 @@ msgstr "Osvježavamo popis banovanih..."
 #: Nobody is banned!
 msgid "bans_nobody"
 msgstr "Niko nije banovan!"
+
+#: Refresh invite list
+msgid "invites_refresh"
+msgstr "Osvježi popis pozvanih"
+
+#: Invited user
+msgid "invites_user"
+msgstr "Pozvani korisnici"
+
+#: Invited by
+msgid "invites_by"
+msgstr "Pozivnice od"
+
+#: Refreshing invite list...
+msgid "invites_refreshing"
+msgstr "Popis pozvanih se osvježava..."
+
+#: Nobody is invited!
+msgid "invites_nobody"
+msgstr "Niko nije pozvan!"
+
+#: This is a public channel.
+msgid "invite_public_channel"
+msgstr "Ovo je javni kanal."
+
+#: Only invited users can join.
+msgid "invite_private_channel"
+msgstr "Samo pozvani korisnici se mogu pridružiti."
+
+#: Only allow invited users
+msgid "invite_set_private"
+msgstr "Dopusti samo pozvane korisnike"
+
+#: Allow anybody to join
+msgid "invite_set_public"
+msgstr "Dopusti bilo kome da se pridruži"
+
+#: Only registered users can join
+msgid "invite_registered_only"
+msgstr "Samo registrovani korisnici se mogu pridružiti"
+
+#: Add invite
+msgid "invite_add_invite"
+msgstr "Dodaj pozivnicu"
+
+#: (Any registered user)
+msgid "invite_any_registered"
+msgstr "Pozovi bilo kojeg registrovanog korisnika"
 
 #: Topic
 msgid "channel_topic"
@@ -688,6 +748,10 @@ msgstr "Nađi više kanala"
 msgid "change_nick"
 msgstr "Promijeni nadimak"
 
+#: Enter new nickname...
+msgid "enter_new_nick"
+msgstr "Upiši novi nadimak..."
+
 #: Account name: {{user}}
 msgid "user_account"
 msgstr "Korisničko ime: {{user}}"
@@ -743,6 +807,18 @@ msgstr "Banuj i izbaci sa kanala"
 #: Please specify a channel to join. eg /join #example
 msgid "error_no_channel_join"
 msgstr "Molimo naznačite na koji kanal se želite sojiti. npr /join #primjer"
+
+#: The nickname {{nick}} is already in use!
+msgid "error_nick_in_use"
+msgstr "Nadimak {{nick}} je već u upotrebi!"
+
+#: You must enter a new nickname
+msgid "error_empty_nick"
+msgstr "Morate upisati novi nadimak"
+
+#: Nickname must not start with a number
+msgid "error_no_number"
+msgstr "Nadimci ne smiju počinjati sa brojem"
 
 #: {{nick}} gives ops to {{target}}
 msgid "modes_give_ops"
