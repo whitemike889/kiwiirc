@@ -26,6 +26,9 @@
             ml.message_info_open && ml.message_info_open !== message ?
                 'kiwi-messagelist-message--blur' :
                 '',
+            (message.user && userMode(message.user)) ?
+                'kiwi-messagelist-message--user-mode-'+userMode(message.user) :
+                ''
         ]"
         :data-message-id="message.id"
         :data-nick="(message.nick||'').toLowerCase()"
@@ -66,10 +69,11 @@
                     @mouseover="ml.hover_nick=message.nick.toLowerCase();"
                     @mouseout="ml.hover_nick='';"
                 >
-                    <span class="kiwi-messagelist-nick-prefix">
-                        {{ message.user ? userModePrefix(message.user) : '' }}
-                    </span>
-                    {{ message.nick }}
+                    <span class="kiwi-messagelist-nick-prefix">{{
+                        message.user ?
+                            userModePrefix(message.user) :
+                            ''
+                    }}</span>{{ message.nick }}
                 </div>
                 <div
                     v-if="showRealName"

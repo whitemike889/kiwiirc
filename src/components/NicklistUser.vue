@@ -14,8 +14,7 @@
             :user="user"
             :toggle="false"
         />
-        <span class="kiwi-nicklist-user-prefix">{{ nicklist.userModePrefix(user) }}</span>
-        <span
+        <span class="kiwi-nicklist-user-prefix">{{ nicklist.userModePrefix(user) }}</span><span
             :style="{ 'color': userColour }"
             class="kiwi-nicklist-user-nick"
         >{{ user.nick }}
@@ -61,6 +60,7 @@ export default {
     box-sizing: border-box;
     transition: all 0.1s;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .kiwi-nicklist-user-nick {

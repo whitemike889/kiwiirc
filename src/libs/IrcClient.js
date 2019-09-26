@@ -4,9 +4,9 @@ import _ from 'lodash';
 import strftime from 'strftime';
 import Irc from 'irc-framework';
 import * as TextFormatting from '@/helpers/TextFormatting';
-import * as Misc from '@/helpers/Misc';
 import * as IrcdDiffs from '@/helpers/IrcdDiffs';
 import typingMiddleware from './TypingMiddleware';
+import chathistoryMiddleware from './ChathistoryMiddleware';
 import * as ServerConnection from './ServerConnection';
 
 export function create(state, network) {
@@ -31,6 +31,7 @@ export function create(state, network) {
     // Current version of irc-framework only support draft/message-tags-0.2
     // TODO: Removee this once irc-framework has been updated
     ircClient.requestCap('message-tags');
+    ircClient.use(chathistoryMiddleware());
     ircClient.use(clientMiddleware(state, network));
     ircClient.use(typingMiddleware());
 
@@ -93,8 +94,6 @@ export function create(state, network) {
 function clientMiddleware(state, network) {
     let networkid = network.id;
     let numConnects = 0;
-    // Requested chathistory for this connection yet
-    let requestedCh = false;
     let isRegistered = false;
 
     return function middlewareFn(client, rawEvents, parsedEvents) {
@@ -250,8 +249,6 @@ function clientMiddleware(state, network) {
                 });
             }
 
-            // Haven't yet requested chathistory for this connection
-            requestedCh = false;
             numConnects++;
         }
 
@@ -259,19 +256,6 @@ function clientMiddleware(state, network) {
             // If the network name has changed from the irc-framework default, update ours
             if (client.network.name !== 'Network') {
                 network.name = client.network.name;
-            }
-
-            let historySupport = !!network.ircClient.network.supports('chathistory');
-
-            // If this is a reconnect then request chathistory from our last position onwards
-            // to get any missed messages
-            if (numConnects > 1 && !requestedCh && historySupport) {
-                requestedCh = true;
-                network.buffers.forEach((buffer) => {
-                    if (buffer.isChannel() || buffer.isQuery()) {
-                        buffer.requestScrollback('forward');
-                    }
-                });
             }
         }
 
@@ -746,6 +730,18 @@ function clientMiddleware(state, network) {
                 message: messageBody,
                 type: 'motd',
             });
+
+            let historySupport = !!network.ircClient.chathistory.isSupported();
+
+            // If this is a reconnect then request chathistory from our last position onwards
+            // to get any missed messages
+            if (numConnects > 1 && historySupport) {
+                network.buffers.forEach((b) => {
+                    if (b.isChannel() || b.isQuery()) {
+                        b.requestScrollback('forward');
+                    }
+                });
+            }
         }
 
         if (command === 'nick in use' && !client.connection.registered) {
@@ -820,15 +816,13 @@ function clientMiddleware(state, network) {
             });
             state.addMultipleUsersToBuffer(buffer, users);
 
-            if (!hadExistingUsers && network.ircClient.network.supports('chathistory')) {
-                let time = Misc.dateIso();
+            if (!hadExistingUsers && network.ircClient.chathistory.isSupported()) {
                 let correctBuffer = buffer.isChannel() || buffer.isQuery();
 
                 if (correctBuffer && numConnects > 1) {
                     buffer.requestScrollback('forward');
                 } else if (correctBuffer) {
-                    let line = `CHATHISTORY ${buffer.name} timestamp=${time} message_count=-50`;
-                    network.ircClient.raw(line);
+                    network.ircClient.chathistory.before(buffer.name, '*');
                 }
             }
         }
